@@ -1,0 +1,17 @@
+application: pastebin
+version: dev
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+
+  - url: /static/
+    static_dir: static
+
+  - url: /_ah/(mapreduce|queue|warmup).*
+    script: project.wsgi.application
+    login: admin
+
+  - url: /.*
+    script: project.wsgi.application

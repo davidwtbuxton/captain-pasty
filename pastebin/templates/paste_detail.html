@@ -1,0 +1,19 @@
+{% extends '_base.html' %}
+
+{% block content %}
+
+<div class="paste-fork">
+	<a href="{% url 'paste_create' %}?fork={{ paste.pk }}">
+		Fork this paste
+	</a>
+</div>
+
+<div class="paste">
+	{% include '_paste_meta.html' %}
+
+	<div class="paste__content">
+		{{ paste.content_highlight|safe }}
+	</div>
+</div>
+
+{% endblock content %}

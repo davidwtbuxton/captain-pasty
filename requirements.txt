@@ -1,0 +1,6 @@
+Django==1.10
+djangae==0.9.7
+jinja2==2.8
+MarkupSafe==0.23
+GoogleAppEngineCloudStorageClient==1.9.22.1
+Pygments==2.1.3

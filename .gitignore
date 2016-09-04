@@ -1,0 +1,5 @@
+*.py[cod]
+.*
+/.storage/
+/libs/
+/node_modules/

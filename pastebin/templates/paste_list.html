@@ -1,0 +1,25 @@
+{% extends '_base.html' %}
+
+{% block content %}
+
+{% for paste in pastes %}
+	<div class="paste-summary">
+		{% include '_paste_meta.html' %}
+
+		<div class="paste__content">
+			<a href="{% url 'paste_detail' paste.pk %}">
+				{{ paste.content_summary|safe }}
+			</a>
+		</div>
+	</div>
+{% endfor %}
+
+{% if pastes.has_next %}
+	<nav>
+		<ul class="pager">
+			<li><a href="?p={{ pastes.next_page_number }}&q={{ request.GET.q|default:'' }}">Next</a></li>
+		</ul>
+	</nav>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,16 @@
+<div class="paste-summary__meta">
+	<p>
+		<span class="paste-summary__author">{{ paste.author|default:'anonymous' }}</span>
+		/
+		<span class="paste-summary__filename"><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename|default:paste.pk }}</a></span>
+	</p>
+
+	<p class="paste-summary__created">
+		Created {{ paste.created|since }}
+		{% if paste.forked_from %}– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.author|default:'anonymous' }} / {{ paste.filename }}</a>{% endif %}
+	</p>
+	<p class="paste-summary__description">
+		<a href="{% url 'paste_detail' paste.pk %}">
+{{ paste.description }}</a>
+	</p>
+</div>

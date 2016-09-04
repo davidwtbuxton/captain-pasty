@@ -1,0 +1,11 @@
+{% extends '_base.html' %}
+
+{% block content %}
+
+<form method="post">
+	{% csrf_token %}
+	<p>Start a task to re-save all pastes.</p>
+	<button class="btn btn-default" type="submit">Re-save pastes</button>
+</form>
+
+{% endblock content %}

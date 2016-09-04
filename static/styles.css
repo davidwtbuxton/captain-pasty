@@ -1,0 +1,43 @@
+.paste-summary {
+	margin: 40px 0;
+}
+
+.paste-summary a {
+	text-decoration: none;
+}
+
+.paste-summary__created {
+	color: #999;
+	font-size: 90%;
+}
+
+.paste__content pre {
+	background-color: inherit;
+	font-size: 11px;
+}
+
+.paste__content table.highlight {
+	width: 100%;
+}
+
+.paste__content td.linenos {
+	width: 50px;
+}
+
+.paste__content td.code {
+
+}
+
+.paste-summary a:hover pre {
+	border-color: #000;
+}
+
+#id_content {
+	margin-top: 20px;
+}
+
+.linenodiv pre {
+	border: 0;
+	color: #aaa;
+	text-align: right;
+}
