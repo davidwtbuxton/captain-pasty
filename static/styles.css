@@ -32,12 +32,49 @@
 	border-color: #000;
 }
 
-#id_content {
-	margin-top: 20px;
-}
-
 .linenodiv pre {
 	border: 0;
 	color: #aaa;
 	text-align: right;
+}
+
+.filename__input {
+	min-width: 300px;
+}
+
+/*	Customising for Bootstrap styles. */
+.btn {
+	border-radius: 16px;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.paste-form__file {
+	background-color: #eee;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-bottom: 15px;
+	padding: 3px;
+}
+
+.paste-form__filename {
+	display: initial;
+	flex-grow: 1;
+	margin-right: 5px;
+	width: 300px;
+}
+
+.paste-form__language {
+	display: initial;
+	flex-grow: 0;
+	width: 200px;
+}
+
+.paste-form__content {
+	margin-top: 5px;
+	width: 100%;
 }
