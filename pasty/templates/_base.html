@@ -12,16 +12,16 @@
 	<nav class="navbar navbar-default navbar-static-top">
 		<div class="container">
 			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#pastebin-nav" aria-expanded="false">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#pasty-nav" aria-expanded="false">
 					<span class="sr-only">Toggle navigation</span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="/">Pastebin</a>
+				<a class="navbar-brand" href="/">Captain Pasty</a>
 			</div>
 
-			<div class="navbar-collapse collapse" id="pastebin-nav">
+			<div class="navbar-collapse collapse" id="pasty-nav">
 				<ul class="nav navbar-nav">
 					<li class="{% if section == 'paste_create' %}active{% endif %}"><a class="" href="{% url 'paste_create' %}">New Paste</a></li>
 					<li class="{% if section == 'paste_list' %}active{% endif %}"><a class="" href="{% url 'paste_list' %}">Pastes</a></li>

@@ -14,7 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'pastebin',
+    'pasty',
 ]
 
 MIDDLEWARE = [
@@ -39,7 +39,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'builtins': ['pastebin.templatetags.reform'],
+            'builtins': ['pasty.templatetags.reform'],
         },
     },
 ]

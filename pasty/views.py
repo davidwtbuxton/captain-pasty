@@ -59,7 +59,6 @@ def paste_detail(request, paste_id):
 
 def paste_create(request):
     fork_id = request.GET.get('fork')
-    fork_id = baseconv.base62.decode(fork_id)
 
     try:
         forked_from = Paste.objects.get(pk=fork_id)

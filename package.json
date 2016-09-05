@@ -1,0 +1,15 @@
+{
+  "name": "captain-pasty",
+  "version": "1.0.0",
+  "description": "A pastebin for App Engine",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidwtbuxton/captain-pasty.git"
+  },
+  "dependencies": {
+    "bootstrap": "~3.3.7",
+    "jquery": "~3.1.0"
+  },
+  "devDependencies": {}
+}

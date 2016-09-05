@@ -1,6 +1,7 @@
 Django==1.10
-djangae==0.9.7
-jinja2==2.8
-MarkupSafe==0.23
+
+# This fork fixes Django 1.10 support.
+https://github.com/davidwtbuxton/djangae/archive/use-argparse-for-runserver.zip
+
 GoogleAppEngineCloudStorageClient==1.9.22.1
 Pygments==2.1.3

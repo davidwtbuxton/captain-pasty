@@ -1,2 +1,5 @@
+LIBS="libs"
+
 npm install
-pip install --target libs --requirement requirements.txt
+rm -rf "$LIBS"
+pip install --target "$LIBS" --requirement requirements.txt
