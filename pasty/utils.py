@@ -57,16 +57,13 @@ def highlight_content(content, language=None, filename=None):
     return highlighted
 
 
-def format_content(content, language=None, filename=None):
-    """Returns a summary and a full length version of the content, both with
-    syntax highlighting.
-    """
+def summarize_content(content, language=None, filename=None):
+    """Returns a summary of the content, with syntax highlighting."""
     lines = 10
-    summary = u'\n'.join(content.splitlines()[:lines]).strip()
+    summary = u'\n'.join(content.strip().splitlines()[:lines]).strip()
     summary = highlight_content(summary, language=language)
-    full = highlight_content(content, language=language)
 
-    return summary, full
+    return summary
 
 
 def get_all_highlight_css():
