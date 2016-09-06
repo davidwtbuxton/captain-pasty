@@ -2,17 +2,28 @@
 
 {% block content %}
 
-<div class="paste-fork">
-	<a href="{% url 'paste_create' %}?fork={{ paste.pk }}">
+<div class="paste-actions">
+	<a class="btn btn-default btn-sm" href="{% url 'paste_create' %}?fork={{ paste.pk }}">
 		Fork this paste
 	</a>
+
+
+
+	<button type="button" class="btn btn-default btn-sm star__action" data-paste-id="{{ paste.pk }}">
+		<span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
+	</button>
 </div>
 
 <div class="paste">
 	{% include '_paste_meta.html' %}
 
 	<div class="paste__content">
-		{{ paste.content_highlight|safe }}
+		{% for file in paste.files.all %}
+			<div class="paste__file">
+				<span class="paste__file-name">{{ file.filename }}</span>
+				{{ file.content_highlight }}
+			</div>
+		{% endfor %}
 	</div>
 </div>
 

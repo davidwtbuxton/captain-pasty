@@ -1,3 +1,4 @@
+import calendar
 import os
 
 from google.appengine.api import search
@@ -8,6 +9,11 @@ from .models import Paste
 paste_index = search.Index(name='pastes')
 
 
+def datetime_to_timestamp(value):
+    """Converts a datetime to a Unix timestamp."""
+    return calendar.timegm(value.utctimetuple())
+
+
 def add_paste(paste):
     doc = create_document_for_paste(paste)
     paste_index.put(doc)
@@ -16,10 +22,8 @@ def add_paste(paste):
 def create_document_for_paste(paste):
     config = [
         ('author', search.TextField),
-        ('content', search.TextField),
         ('description', search.TextField),
         ('filename', search.TextField),
-        ('language', search.AtomField),
     ]
 
     fields = [f(name=n, value=getattr(paste, n)) for n, f in config]
@@ -32,7 +36,21 @@ def create_document_for_paste(paste):
     tag_fields = [search.TextField(name='tags', value=value) for value in paste.tags]
     fields.extend(tag_fields)
 
-    doc = search.Document(doc_id=unicode(paste.pk), fields=fields)
+    # Then we need to get the paste's content.
+    contents = []
+
+    for pasty_file in paste.files.all():
+        pasty_file.content.seek(0)
+        value = pasty_file.content.read()
+        contents.append(value)
+
+    fields.append(search.TextField(name='content', value='\n\n'.join(contents)))
+
+    # The default rank is just when the doc was inserted. We use the created
+    # date as rank, which will automatically sort results by paste created.
+    rank = datetime_to_timestamp(paste.created)
+
+    doc = search.Document(doc_id=unicode(paste.pk), rank=rank, fields=fields)
 
     return doc
 
@@ -51,6 +69,24 @@ def search_pastes(query, cursor_string):
     pastes.next_page_number = results.cursor.web_safe_string if pastes.has_next else None
 
     return pastes
+
+
+def build_query(qdict):
+    """Returns a query string from search params."""
+    terms = []
+
+    author = qdict.get('author')
+    if author:
+        term = u'author:"%s"' % author
+        terms.append(term)
+
+    q = qdict.get('q')
+    if q:
+        terms.append(q)
+
+    query = u' '.join(terms)
+
+    return query.encode('utf-8')
 
 
 def index_directory(path):
@@ -73,5 +109,6 @@ def index_directory(path):
                 except UnicodeDecodeError:
                     pass
                 else:
-                    paste = Paste.objects.create(filename=f, description=filename, content=content)
+                    paste = Paste.objects.create(filename=f, description=filename)
+                    paste.save_content(content, filename=f)
                     add_paste(paste)

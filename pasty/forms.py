@@ -11,21 +11,21 @@ class NoLabelSuffix(object):
 
 
 class PasteForm(NoLabelSuffix, forms.ModelForm):
+    content = forms.CharField(widget=forms.Textarea)
+
     class Meta:
         model = Paste
         fields = [
             'description',
             'filename',
-            'language',
-            'content',
             'tags',
         ]
 
-    def __init__(self, *args, **kwargs):
-        super(PasteForm, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     super(PasteForm, self).__init__(*args, **kwargs)
 
-        choices = self.fields['language'].choices
-        choices[0] = (u'', u'Auto-detect language')
-        choices = [(u'Language', choices)]
+    #     choices = self.fields['language'].choices
+    #     choices[0] = (u'', u'Auto-detect language')
+    #     choices = [(u'Language', choices)]
 
-        self.fields['language'].choices = choices
+    #     self.fields['language'].choices = choices

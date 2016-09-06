@@ -1,8 +1,11 @@
 import cloudstorage
-from django.conf import settings
-from django.db import models
 from djangae import fields
 from djangae.contrib.pagination import paginated_model
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.db import models
+from django.utils import safestring
+from django.utils import timezone
 from google.appengine.api import app_identity
 
 from . import utils
@@ -18,6 +21,32 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=100, primary_key=True)
 
 
+def make_name_for_storage(instance, filename):
+    """Returns a name for an object in Cloud Storage (without a bucket)."""
+    # Like 'pasty/2016/03/01/1234567890/setup.py'.
+    # BUG!!!! Need to handle 2 files with the same name for 1 paste.
+    dt = timezone.now()
+    template = u'pasty/{dt:%Y/%m/%d}/{filename}'
+    name = template.format(dt=dt, filename=filename)
+    # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
+    name = name.encode('utf-8')
+
+    return name
+
+
+class PastyFile(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    filename = models.CharField(max_length=200, blank=True)
+    content = models.FileField(upload_to=make_name_for_storage)
+
+    def content_highlight(self):
+        """Returns the file content with syntax highlighting."""
+        text = self.content.read()
+        markup = utils.highlight_content(text, filename=self.filename)
+
+        return safestring.mark_safe(markup)
+
+
 @paginated_model(orderings=['created'])
 class Paste(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -26,7 +55,7 @@ class Paste(models.Model):
     description = models.CharField(max_length=200, blank=True)
     forked_from = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
     tags = fields.SetField(models.SlugField(max_length=100), blank=True)
-    files = fields.JSONField(default=list)
+    files = fields.RelatedListField(PastyFile)
     summary = models.TextField(editable=False)
 
     def save_content(self, content, filename=None):
@@ -38,46 +67,12 @@ class Paste(models.Model):
             self.summary = utils.summarize_content(content, filename=filename)
             self.filename = filename
 
-        path = store_content(content, filename, self)
-        info = {'filename': filename, 'path': path}
+        pasty_file = PastyFile(filename=filename)
+        pasty_file.content.save(filename, ContentFile(content))
+        pasty_file.save()
 
-        self.files.append(info)
+        self.files.add(pasty_file)
 
         return self.save()
 
 
-def get_bucket():
-    """Returns the CLOUD_STORAGE_BUCKET from settings, or the default bucket."""
-    custom_bucket = getattr(settings, BUCKET_KEY, u'')
-
-    if custom_bucket:
-        return custom_bucket
-    else:
-        return app_identity.get_default_gcs_bucket_name()
-
-
-def store_content(content, filename, paste):
-    """Creates a new object in Cloud Storage. Returns the name."""
-    if isinstance(content, unicode):
-        content = content.encode('utf-8')
-
-    bucket = get_bucket()
-    name = make_name_for_storage(filename, paste)
-    dest = '/%s/%s' % (bucket, name)
-
-    with cloudstorage.open(dest, 'w') as fh:
-        fh.write(content)
-
-    return name
-
-
-def make_name_for_storage(filename, paste):
-    """Returns a name for an object in Cloud Storage (without a bucket)."""
-    # Like 'pasty/2016/03/01/1234567890/setup.py'.
-    # BUG!!!! Need to handle 2 files with the same name for 1 paste.
-    template = u'pasty/{dt:Y/M/d}/{pk}/{filename}'
-    name = template.format(dt=paste.created, pk=paste.pk, filename=filename)
-    # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
-    name = name.encode('utf-8')
-
-    return name

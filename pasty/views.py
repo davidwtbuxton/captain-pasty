@@ -1,6 +1,6 @@
 from djangae.contrib.pagination import Paginator
 from django.core.paginator import InvalidPage
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse as render
 
@@ -41,7 +41,9 @@ def paste_search(request):
     """
     query = request.GET.get('q')
     page = request.GET.get('p')
-    pastes = index.search_pastes(query, page)
+
+    query = index.build_query(request.GET)
+    pastes = index.search_pastes(query, page) if query else []
 
     context = {
         'pastes': pastes,
@@ -74,12 +76,21 @@ def paste_create(request):
             paste.author = utils.get_current_user_email()
             paste.save()
 
+            content = form.cleaned_data['content']
+            filename = form.cleaned_data['filename']
+
+            paste.save_content(content, filename)
+
             # Update the search index.
             index.add_paste(paste)
 
             return redirect('paste_list')
     else:
-        initial = forked_from.__dict__ if forked_from else {}
+        if forked_from:
+            initial = forked_from.__dict__
+            initial['content'] = forked_from.files.first().content.read()
+        else:
+            initial = {}
         form  = PasteForm(initial=initial)
 
     context = {
@@ -112,16 +123,23 @@ def highlight_styles(request):
     return HttpResponse(content, content_type='text/css')
 
 
+def api_star(request):
+    """Adds the paste to the user's starred pastes."""
+    paste_id = request.POST.get('paste')
+
+    return JsonResponse({})
+
+
 def api_paste_list(request):
-    return ''
+    return JsonResponse({})
 
 
 def api_paste_detail(request, paste_id):
-    return ''
+    return JsonResponse({})
 
 
 def api_tag_list(request):
-    return ''
+    return JsonResponse({})
 
 
 def save_paste(paste):

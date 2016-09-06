@@ -1,6 +1,12 @@
 <div class="paste-summary__meta">
 	<p>
-		<span class="paste-summary__author">{{ paste.author|default:'anonymous' }}</span>
+		<span class="paste-summary__author">
+			{% if paste.author %}
+				<a href="{% url 'paste_search' %}?author={{ paste.author }}">{{ paste.author }}</a>
+			{% else %}
+				anonymous
+			{% endif %}
+		</span>
 		/
 		<span class="paste-summary__filename"><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename|default:paste.pk }}</a></span>
 	</p>
