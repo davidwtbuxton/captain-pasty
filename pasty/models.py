@@ -4,6 +4,7 @@ from djangae.contrib.pagination import paginated_model
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+from django.utils import encoding
 from django.utils import safestring
 from django.utils import timezone
 from google.appengine.api import app_identity
@@ -47,6 +48,7 @@ class PastyFile(models.Model):
         return safestring.mark_safe(markup)
 
 
+@encoding.python_2_unicode_compatible
 @paginated_model(orderings=['created'])
 class Paste(models.Model):
     created = models.DateTimeField(auto_now_add=True)
@@ -57,6 +59,12 @@ class Paste(models.Model):
     tags = fields.SetField(models.SlugField(max_length=100), blank=True)
     files = fields.RelatedListField(PastyFile)
     summary = models.TextField(editable=False)
+
+    def __str__(self):
+        author = self.author or u'anonymous'
+        name = self.filename or self.pk
+
+        return u'%s / %s' % (author, name)
 
     def save_content(self, content, filename=None):
         # File contents are stored in Cloud Storage. The first file is
@@ -76,3 +84,8 @@ class Paste(models.Model):
         return self.save()
 
 
+class Star(models.Model):
+    id = models.CharField(max_length=250, primary_key=True)
+    created = models.DateTimeField(auto_now_add=True)
+    author = models.EmailField()
+    paste = models.ForeignKey(Paste)

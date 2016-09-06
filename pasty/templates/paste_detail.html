@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<h1>{{ paste }}</h1>
+
 <div class="paste-actions">
 	<a class="btn btn-default btn-sm" href="{% url 'paste_create' %}?fork={{ paste.pk }}">
 		Fork this paste

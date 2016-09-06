@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<h1>Pastes</h1>
+
 {% for paste in pastes %}
 	<div class="paste-summary">
 		{% include '_paste_meta.html' %}
@@ -12,6 +14,9 @@
 			</a>
 		</div>
 	</div>
+{% empty %}
+	<p>No pastes. <a href="{% url 'paste_create' %}">Why not add one?</a></p>
+
 {% endfor %}
 
 {% if pastes.has_next %}

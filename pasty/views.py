@@ -1,13 +1,15 @@
+import mistune
 from djangae.contrib.pagination import Paginator
 from django.core.paginator import InvalidPage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse as render
+from django.utils import safestring
 
 from . import index
 from . import utils
 from .forms import PasteForm
-from .models import Paste, Tag
+from .models import Paste, Star, Tag
 
 
 def paste_list(request):
@@ -73,7 +75,7 @@ def paste_create(request):
         if form.is_valid():
             paste = form.save(commit=False)
             paste.forked_from = forked_from
-            paste.author = utils.get_current_user_email()
+            paste.author = request.user_email
             paste.save()
 
             content = form.cleaned_data['content']
@@ -112,7 +114,15 @@ def tag_list(request):
 
 
 def about(request):
-    context = {'section': 'about'}
+    with open('CHANGELOG.md') as fh:
+        text = fh.read()
+        changelog = mistune.markdown(text)
+        changelog = safestring.mark_safe(changelog)
+
+    context = {
+        'section': 'about',
+        'changelog': changelog,
+    }
 
     return render(request, 'about.html', context)
 
@@ -124,10 +134,29 @@ def highlight_styles(request):
 
 
 def api_star(request):
-    """Adds the paste to the user's starred pastes."""
-    paste_id = request.POST.get('paste')
+    """Adds the paste to the user's starred pastes (for POSTs)."""
+    if not request.user_email:
+        result = {u'error': u'Please sign in to star pastes'}
+        return JsonResponse(result, status_code=403)
 
-    return JsonResponse({})
+    if request.method == 'POST':
+        paste_id = request.POST.get('paste')
+        paste = get_object_or_404(Paste, pk=paste_id)
+
+        # We construct the star id ourselves so that if you star something
+        # twice it doesn't create multiple stars for the same paste.
+        star_id = u'%s/%s' % (request.user_email, paste.pk)
+        starred = Star.objects.create(id=star_id, author=request.user_email, paste=paste)
+
+        result = {
+            'id': starred.id,
+            'author': starred.author,
+            'paste': starred.paste,
+        }
+    else:
+        result {}
+
+    return JsonResponse(result)
 
 
 def api_paste_list(request):

@@ -48,6 +48,8 @@ def _since(dt, moment):
             form = singular if num == 1 else plural
 
             return u'%d %s' % (num, form)
+    else:
+        return u'0 seconds'
 
 
 @register.filter

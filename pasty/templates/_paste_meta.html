@@ -8,7 +8,7 @@
 			{% endif %}
 		</span>
 		/
-		<span class="paste-summary__filename"><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename|default:paste.pk }}</a></span>
+		<span class="paste-summary__filename"><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename }}</a></span>
 	</p>
 
 	<p class="paste-summary__created">
