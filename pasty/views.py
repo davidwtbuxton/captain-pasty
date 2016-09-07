@@ -5,11 +5,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse as render
 from django.utils import safestring
+from django.views.decorators.http import require_http_methods
 
 from . import index
 from . import utils
 from .forms import PasteForm
-from .models import Paste, Star, Tag
+from .models import Paste, Star, Tag, get_starred_pastes
 
 
 def paste_list(request):
@@ -27,6 +28,7 @@ def paste_list(request):
     context = {
         'pastes': pastes,
         'section': 'paste_list',
+        'starred_pastes': get_starred_pastes(request.user_email),
     }
 
     return render(request, 'paste_list.html', context)
@@ -50,6 +52,7 @@ def paste_search(request):
     context = {
         'pastes': pastes,
         'section': 'paste_search',
+        'starred_pastes': get_starred_pastes(request.user_email),
     }
 
     return render(request, 'paste_list.html', context)
@@ -58,7 +61,12 @@ def paste_search(request):
 def paste_detail(request, paste_id):
     paste = get_object_or_404(Paste, pk=paste_id)
 
-    return render(request, 'paste_detail.html', {'paste': paste})
+    context = {
+        'paste': paste,
+        'starred_pastes': get_starred_pastes(request.user_email),
+    }
+
+    return render(request, 'paste_detail.html', context)
 
 
 def paste_create(request):
@@ -98,6 +106,8 @@ def paste_create(request):
     context = {
         'form': form,
         'section': 'paste_create',
+        'starred_pastes': get_starred_pastes(request.user_email),
+
     }
 
     return render(request, 'paste_form.html', context)
@@ -108,6 +118,7 @@ def tag_list(request):
     context = {
         'tags': tags,
         'section': 'tag_list',
+        'starred_pastes': get_starred_pastes(request.user_email),
     }
 
     return render(request, 'tag_list.html', context)
@@ -133,38 +144,71 @@ def highlight_styles(request):
     return HttpResponse(content, content_type='text/css')
 
 
+@require_http_methods(['POST'])
 def api_star(request):
     """Adds the paste to the user's starred pastes (for POSTs)."""
     if not request.user_email:
         result = {u'error': u'Please sign in to star pastes'}
-        return JsonResponse(result, status_code=403)
+        return JsonResponse(result, status=403)
 
-    if request.method == 'POST':
-        paste_id = request.POST.get('paste')
-        paste = get_object_or_404(Paste, pk=paste_id)
+    paste_id = request.POST.get('paste')
+    try:
+        paste = Paste.objects.get(pk=paste_id)
+    except Paste.DoesNotExist:
+        return JsonResponse({'error': 'Does not exist'}, status=400)
 
-        # We construct the star id ourselves so that if you star something
-        # twice it doesn't create multiple stars for the same paste.
-        star_id = u'%s/%s' % (request.user_email, paste.pk)
-        starred = Star.objects.create(id=star_id, author=request.user_email, paste=paste)
+    # We construct the star id ourselves so that if you star something
+    # twice it doesn't create multiple stars for the same paste.
+    star_id = u'%s/%s' % (request.user_email, paste.pk)
+    starred = Star.objects.create(id=star_id, author=request.user_email, paste_id=paste_id)
 
-        result = {
-            'id': starred.id,
-            'author': starred.author,
-            'paste': starred.paste,
-        }
-    else:
-        result {}
+    result = {
+        'id': starred.id,
+        'author': starred.author,
+        'paste': starred.paste_id,
+    }
 
     return JsonResponse(result)
 
 
 def api_paste_list(request):
+    per_page = 20
+    pastes = Paste.objects.order_by('-created')
+    paginator = Paginator(pastes, per_page)
+    page_num = request.GET.get('p', 1)
+
+    try:
+        pastes = paginator.page(page_num)
+    except InvalidPage:
+        return redirect('api_paste_list')
+
+    pastes = [p.to_dict() for p in pastes]
+
+    if pastes.has_next:
+        next_page = request.path + '?p=' + pastes.next_page_number
+        next_page = request.build_absolute_uri(next_page)
+    else:
+        next_page = None
+
+    result = {
+        'pastes': pastes,
+        'next': next_page,
+    }
+
     return JsonResponse({})
 
 
 def api_paste_detail(request, paste_id):
-    return JsonResponse({})
+    try:
+        paste = Paste.objects.get(pk=paste_id)
+    except Paste.DoesNotExist:
+        result = {'error': 'Paste does not exist'}
+        status = 404
+    else:
+        result = paste.to_dict()
+        status = 200
+
+    return JsonResponse(result, status=status)
 
 
 def api_tag_list(request):

@@ -83,9 +83,47 @@ class Paste(models.Model):
 
         return self.save()
 
+    def to_dict(self):
+        """JSON representation."""
+        info = {
+            'id': self.pk,
+            'created': self.created,
+            'author': self.author,
+            'filename': self.filename,
+            'description': self.description,
+            'forked_from': self.forked_from,
+            'tags': self.tags,
+            'files': [],
+            'summary': self.summary,
+        }
 
+        for pasty_file in self.files.all():
+            file_info = {
+                'id': pasty_file.pk,
+                'created': pasty_file.created,
+                'filename': pasty_file.filename,
+                'content': pasty_file.content.name,
+                'link': pasty_file.content.url,
+            }
+            info['files'].append(file_info)
+
+        return info
+
+
+
+@paginated_model(orderings=['created'])
 class Star(models.Model):
     id = models.CharField(max_length=250, primary_key=True)
     created = models.DateTimeField(auto_now_add=True)
     author = models.EmailField()
-    paste = models.ForeignKey(Paste)
+    paste_id = models.CharField(max_length=100)
+
+
+def get_starred_pastes(email):
+    """Returns pastes starred by a user, ordered by when the paste was starred."""
+    stars = Star.objects.filter(author=email).order_by('-created')
+    paste_ids = [star.paste_id for star in stars[:20]]
+    pastes = list(Paste.objects.filter(pk__in=paste_ids))
+    pastes.sort(key=lambda x: paste_ids.index(x.pk))
+
+    return pastes

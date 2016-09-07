@@ -4,6 +4,16 @@
 
 <h1>Pastes</h1>
 
+{% if starred_pastes %}
+	<div class="starred-paste">
+	{% for paste in starred_pastes %}
+		<div class="starred-paste__summary">
+			<a href="{% url 'paste_detail' paste.pk %}">{{ paste }}</a>
+		</div>
+	{% endfor %}
+	</div>
+{% endif %}
+
 {% for paste in pastes %}
 	<div class="paste-summary">
 		{% include '_paste_meta.html' %}

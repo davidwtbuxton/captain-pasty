@@ -8,6 +8,7 @@ urlpatterns = [
         url(r'^pastes/$', views.api_paste_list, name='api_paste_list'),
         url(r'^pastes/([a-zA-Z0-9]+)/$', views.api_paste_detail, name='api_paste_detail'),
         url(r'^tags/$', views.api_tag_list, name='api_tag_list'),
+        url(r'^star/$', views.api_star, name='api_star'),
     ])),
 
     url(r'^highlight-styles.css$', views.highlight_styles, name='highlight_styles'),

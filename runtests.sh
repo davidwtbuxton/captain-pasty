@@ -2,4 +2,4 @@
 
 set -eu
 
-python manage.py test
+python manage.py test $@
