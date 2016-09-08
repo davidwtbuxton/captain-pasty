@@ -1,5 +1,6 @@
 import io
 
+import jsonschema
 import pygments
 from google.appengine.api import users
 from pygments import formatters
@@ -94,10 +95,37 @@ def get_url_patterns(prefix=None):
 
 def count_lines(content):
     """Returns the number of lines for a string."""
-    fh = io.StringIO(content)
+    try:
+        fh = io.StringIO(content)
+    except TypeError:
+        fh = io.BytesIO(content)
+        
     count = 0
 
     for count, _ in enumerate(fh, 1):
         pass
 
     return count
+
+
+paste_schema = {
+    '$schema': 'http://json-schema.org/schema#',
+    'type': 'object',
+    'properties': {
+        'description': {'type': 'string'},
+        'files': {
+            'type': 'array',
+            'minItems': 1,
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'filename': {'type': 'string'},
+                    'content': {'type': 'string'},
+                },
+                'required': ['filename', 'content'],
+            },
+        },
+    },
+    'required': ['description', 'files'],
+}
+paste_validator = jsonschema.Draft4Validator(paste_schema)

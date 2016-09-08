@@ -1,13 +1,10 @@
-import cloudstorage
 from djangae import fields
 from djangae.contrib.pagination import paginated_model
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
 from django.utils import encoding
 from django.utils import safestring
 from django.utils import timezone
-from google.appengine.api import app_identity
 
 from . import utils
 
@@ -96,7 +93,6 @@ class Paste(models.Model):
             'filename': self.filename,
             'description': self.description,
             'forked_from': self.forked_from,
-            'tags': self.tags,
             'files': [],
             'summary': self.summary,
         }

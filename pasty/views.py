@@ -1,3 +1,6 @@
+import json
+
+import jsonschema
 import mistune
 from djangae.contrib.pagination import Paginator
 from django.core.paginator import InvalidPage
@@ -193,6 +196,9 @@ def api_star(request):
 
 
 def api_paste_list(request):
+    if request.method == 'POST':
+        return api_paste_create(request)
+
     per_page = 20
     pastes = Paste.objects.order_by('-created')
     paginator = Paginator(pastes, per_page)
@@ -226,6 +232,41 @@ def api_paste_detail(request, paste_id):
     else:
         result = paste.to_dict()
         status = 200
+
+    return JsonResponse(result, status=status)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def api_paste_create(request):
+    if not request.user_email:
+        result = {u'error': u'Please sign in to create pastes'}
+
+        return JsonResponse(result, status=403)
+
+    try:
+        data = json.load(request)
+    except ValueError:
+        result = {'error': 'Invalid request'}
+
+        return JsonResponse(result, status=400)
+    
+    try:
+        utils.paste_validator.validate(data)
+    except jsonschema.ValidationError as err:
+        result = {'error': err.message}
+
+        return JsonResponse(result, status=400)
+
+    first_file = data['files'][0]
+    paste = Paste.objects.create(
+        author=request.user_email,
+        description=data['description'],
+        filename=first_file['filename'],
+    )
+    paste.save_content(first_file['content'], filename=first_file['filename'])
+    result = paste.to_dict()
+    status = 201
 
     return JsonResponse(result, status=status)
 

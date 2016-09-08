@@ -1,11 +1,12 @@
 import datetime
+import json
 
 import mock
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from . import AppEngineTestCase
-from ..models import Paste, Star
+from ..models import Paste
 
 
 class PasteListTestCase(AppEngineTestCase):
@@ -120,7 +121,6 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                 u'forked_from': None,
                 u'id': 1,
                 u'summary': u'<table class="highlight highlight__tractable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight highlight__trac"><pre><span></span>foo\n</pre></div>\n</td></tr></table>',
-                u'tags': u'{}',
             }
         )
 
@@ -131,6 +131,101 @@ class ApiRootTestCase(AppEngineTestCase):
 
         response = self.client.get(url)
 
-        self.assertEqual(resonse.status_code, 302)
-        self.assertEqual(response['Location'], '')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/api/v1/')
 
+
+class ApiPasteCreateTestCase(AppEngineTestCase):
+    def test_anonymous_user_returns_error(self):
+        url = reverse('api_paste_list')
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {'error': 'Please sign in to create pastes'},
+        )
+
+    def test_malformed_data_returns_error(self):
+        url = reverse('api_paste_list')
+        data = 'invalid'
+        self.login('alice@example.com')
+        response = self.client.post(url, data, content_type='application/json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {'error': 'Invalid request'},
+        )
+    
+    def test_invalid_data_returns_error(self):
+        url = reverse('api_paste_list')
+        self.login('alice@example.com')
+
+        # Missing the 'content' key.
+        data = {
+            'description': 'Short description',
+            'files': [
+                {
+                    'filename': 'example.txt',
+                },
+            ],
+        }
+        data = json.dumps(data)
+
+        response = self.client.post(url, data, content_type='application/json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {'error': "'content' is a required property"},
+        )
+    maxDiff=None
+    def test_valid_data_creates_paste(self):
+        url = reverse('api_paste_list')
+        self.login('alice@example.com')
+
+        data = {
+            'description': 'Short description',
+            'files': [
+                {
+                    'filename': 'example.txt',
+                    'content': 'Foo bar baz',
+                },
+            ],
+        }
+        data = json.dumps(data)
+        xmas = datetime.datetime(2016, 12, 25, tzinfo=timezone.utc)
+
+        with mock.patch('django.utils.timezone.now', return_value=xmas):
+            response = self.client.post(url, data, content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {
+                u'author': u'alice@example.com',
+                u'created': u'2016-12-25T00:00:00Z',
+                u'description': u'Short description',
+                u'filename': u'example.txt',
+                u'files': [{
+                    u'content': u'pasty/2016/12/25/example.txt',
+                    u'created': u'2016-12-25T00:00:00Z',
+                    u'filename': u'example.txt',
+                    u'id': 2,
+                    u'link': u'/_ah/gcs/app_default_bucket/pasty/2016/12/25/example.txt',
+                }],
+                u'forked_from': None,
+                u'id': 1,
+                u'summary': (u'<table class="highlight highlight__tractable">'
+                    '<tr><td class="linenos"><div class="linenodiv"><pre>1'
+                    '</pre></div></td><td class="code">'
+                    '<div class="highlight highlight__trac"><pre><span></span>'
+                    'Foo bar baz\n</pre></div>\n</td></tr></table>'),
+            },
+        )
+        
