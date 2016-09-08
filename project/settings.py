@@ -1,13 +1,15 @@
 import os
 
+from djangae import environment
 from djangae.settings_base import *
 
 from .boot import AppConfig
 
 
+ON_PROD = environment.is_production_environment()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = AppConfig.get().secret_key
-DEBUG = True
+DEBUG = not ON_PROD
 
 INSTALLED_APPS = [
     'djangae',
@@ -39,6 +41,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.messages.context_processors.messages',
+                'pasty.context_processors.pasty',
             ],
             'builtins': ['pasty.templatetags.reform'],
         },

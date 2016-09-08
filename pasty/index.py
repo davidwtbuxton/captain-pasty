@@ -32,10 +32,6 @@ def create_document_for_paste(paste):
     created = paste.created.replace(tzinfo=None)
     fields.append(search.DateField(name='created', value=created))
 
-    # Tags is a set field.
-    tag_fields = [search.TextField(name='tags', value=value) for value in paste.tags]
-    fields.extend(tag_fields)
-
     # Then we need to get the paste's content.
     contents = []
 
@@ -62,7 +58,6 @@ def search_pastes(query, cursor_string):
 
     results = paste_index.search(query)
     pks = [int(doc.doc_id) for doc in results]
-    print 'found pks %r' % pks
     pastes = Paste.objects.filter(pk__in=pks)
     pastes.has_next = bool(results.cursor)
 
@@ -90,6 +85,14 @@ def build_query(qdict):
 
 
 def index_directory(path):
+    try:
+        import faker
+    except ImportError:
+        get_email = lambda: u'jeff@example.com'
+    else:
+        fake = faker.Faker()
+        get_email = fake.email
+
     interesting = {'.py', '.html', '.js', '.txt', '.md', '.sh', '.yaml', '.css'}
 
     for root, dirs, files in os.walk(path):
@@ -109,6 +112,7 @@ def index_directory(path):
                 except UnicodeDecodeError:
                     pass
                 else:
-                    paste = Paste.objects.create(filename=f, description=filename)
+                    author = get_email()
+                    paste = Paste.objects.create(filename=f, author=author, description=filename)
                     paste.save_content(content, filename=f)
                     add_paste(paste)

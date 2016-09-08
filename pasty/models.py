@@ -16,12 +16,6 @@ BUCKET_KEY = 'CLOUD_STORAGE_BUCKET'
 language_choices = [(name, name) for name in utils.get_language_names()]
 
 
-class Tag(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100, primary_key=True)
-
-
 def make_name_for_storage(instance, filename):
     """Returns a name for an object in Cloud Storage (without a bucket)."""
     # Like 'pasty/2016/03/01/1234567890/setup.py'.
@@ -39,6 +33,7 @@ class PastyFile(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     filename = models.CharField(max_length=200, blank=True)
     content = models.FileField(upload_to=make_name_for_storage)
+    num_lines = models.BigIntegerField(blank=True, null=True)
 
     def content_highlight(self):
         """Returns the file content with syntax highlighting."""
@@ -56,15 +51,23 @@ class Paste(models.Model):
     filename = models.CharField(max_length=200, blank=True)
     description = models.CharField(max_length=200, blank=True)
     forked_from = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
-    tags = fields.SetField(models.SlugField(max_length=100), blank=True)
     files = fields.RelatedListField(PastyFile)
     summary = models.TextField(editable=False)
+    num_lines = models.BigIntegerField(null=True, blank=True)
+    num_files = models.BigIntegerField(null=True, blank=True)
 
     def __str__(self):
         author = self.author or u'anonymous'
         name = self.filename or self.pk
 
         return u'%s / %s' % (author, name)
+
+    def save(self, *args, **kwargs):
+        files = list(self.files.all())
+        self.num_files = len(files)
+        self.num_lines = sum(f.num_lines or 0 for f in files)
+
+        return super(Paste, self).save(*args, **kwargs)
 
     def save_content(self, content, filename=None):
         # File contents are stored in Cloud Storage. The first file is
@@ -75,7 +78,8 @@ class Paste(models.Model):
             self.summary = utils.summarize_content(content, filename=filename)
             self.filename = filename
 
-        pasty_file = PastyFile(filename=filename)
+        num_lines = utils.count_lines(content)
+        pasty_file = PastyFile(filename=filename, num_lines=num_lines)
         pasty_file.content.save(filename, ContentFile(content))
         pasty_file.save()
 
@@ -116,7 +120,7 @@ class Star(models.Model):
     id = models.CharField(max_length=250, primary_key=True)
     created = models.DateTimeField(auto_now_add=True)
     author = models.EmailField()
-    paste_id = models.CharField(max_length=100)
+    paste_id = models.BigIntegerField()
 
 
 def get_starred_pastes(email):

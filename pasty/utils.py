@@ -1,3 +1,5 @@
+import io
+
 import pygments
 from google.appengine.api import users
 from pygments import formatters
@@ -88,3 +90,14 @@ def get_url_patterns(prefix=None):
     Each item is a pair of (name, pattern).
     """
     return []
+
+
+def count_lines(content):
+    """Returns the number of lines for a string."""
+    fh = io.StringIO(content)
+    count = 0
+
+    for count, _ in enumerate(fh, 1):
+        pass
+
+    return count

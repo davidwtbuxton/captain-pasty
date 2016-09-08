@@ -1,4 +1,8 @@
-.container > h1 {
+.container {
+	position: relative;
+}
+
+.container h1 {
 	margin: 0 0 10px 0;
 	font-size: 30px;
 }
@@ -12,7 +16,7 @@
 }
 
 .paste-summary {
-	margin: 40px 0;
+	margin: 0 0 40px 0;
 }
 
 .paste-summary a {
@@ -45,6 +49,11 @@
 	border-color: #000;
 }
 
+.paste-actions {
+	position: absolute;
+	right: 0;
+	top: 0;
+}
 .linenodiv pre {
 	border: 0;
 	color: #aaa;
@@ -90,4 +99,21 @@
 .paste-form__content {
 	margin-top: 5px;
 	width: 100%;
+}
+
+.stars__list {
+	margin-left: 0;
+	padding-left: 18px;
+}
+
+.full-height {
+	display: flex;
+	flex-direction: column;
+}
+
+.full-height .paste-form__file {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	flex: 1;
 }

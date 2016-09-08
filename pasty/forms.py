@@ -18,14 +18,4 @@ class PasteForm(NoLabelSuffix, forms.ModelForm):
         fields = [
             'description',
             'filename',
-            'tags',
         ]
-
-    # def __init__(self, *args, **kwargs):
-    #     super(PasteForm, self).__init__(*args, **kwargs)
-
-    #     choices = self.fields['language'].choices
-    #     choices[0] = (u'', u'Auto-detect language')
-    #     choices = [(u'Language', choices)]
-
-    #     self.fields['language'].choices = choices

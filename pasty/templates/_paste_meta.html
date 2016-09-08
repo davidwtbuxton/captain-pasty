@@ -13,10 +13,13 @@
 
 	<p class="paste-summary__created">
 		Created {{ paste.created|since }}
-		{% if paste.forked_from %}– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.author|default:'anonymous' }} / {{ paste.filename }}</a>{% endif %}
+
+		– {{ paste.num_lines }} line{{ paste.num_lines|pluralize }} in {{ paste.num_files }} file{{ paste.num_files|pluralize }}
+
+		{% if paste.forked_from %}– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.forked_from }}</a>{% endif %}
+
 	</p>
 	<p class="paste-summary__description">
-		<a href="{% url 'paste_detail' paste.pk %}">
-{{ paste.description }}</a>
+		{{ paste.description }}
 	</p>
 </div>

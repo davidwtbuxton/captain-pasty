@@ -9,7 +9,6 @@ urlpatterns = [
         url(r'^$', views.api_index, name='api_index'),
         url(r'^pastes/$', views.api_paste_list, name='api_paste_list'),
         url(r'^pastes/([a-zA-Z0-9]+)/$', views.api_paste_detail, name='api_paste_detail'),
-        url(r'^tags/$', views.api_tag_list, name='api_tag_list'),
         url(r'^star/$', views.api_star, name='api_star'),
     ])),
 
@@ -17,7 +16,6 @@ urlpatterns = [
     url(r'^$', views.paste_create, name='paste_create'),
     url(r'^recent/$', views.paste_list, name='paste_list'),
     url(r'^search/$', views.paste_search, name='paste_search'),
-    url(r'^tags/$', views.tag_list, name='tag_list'),
     url(r'^about/$', views.about, name='about'),
     url(r'^admin/$', views.admin, name='admin'),
     url(r'^([a-zA-Z0-9]+)/$', views.paste_detail, name='paste_detail'),

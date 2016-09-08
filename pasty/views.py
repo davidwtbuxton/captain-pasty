@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 from . import index
 from . import utils
 from .forms import PasteForm
-from .models import Paste, Star, Tag, get_starred_pastes
+from .models import Paste, Star, get_starred_pastes
 
 
 def paste_list(request):
@@ -112,17 +112,6 @@ def paste_create(request):
     }
 
     return render(request, 'paste_form.html', context)
-
-
-def tag_list(request):
-    tags = Tag.objects.all()
-    context = {
-        'tags': tags,
-        'section': 'tag_list',
-        'starred_pastes': get_starred_pastes(request.user_email),
-    }
-
-    return render(request, 'tag_list.html', context)
 
 
 def about(request):
