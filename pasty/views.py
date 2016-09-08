@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse as render
 from django.utils import safestring
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from . import index
@@ -144,9 +145,34 @@ def highlight_styles(request):
     return HttpResponse(content, content_type='text/css')
 
 
+def api_root(request):
+    """Redirect to the most recent API index."""
+    return redirect('api_index')
+
+
+def api_index(request):
+    """Info about the API endpoints."""
+    patterns = utils.get_url_patterns('/api/v1')
+    result = {'api': []}
+
+    for name, pattern in patterns:
+        link = request.build_absolute_uri(pattern)
+        info = {
+            'link': link,
+            'name': name,
+            'pattern': pattern,
+        }
+
+        result['api'].append(info)
+
+    return JsonResponse(result)
+
+
+@csrf_exempt
 @require_http_methods(['POST'])
 def api_star(request):
     """Adds the paste to the user's starred pastes (for POSTs)."""
+    # N.B. we can ignore csrf because we check the user is signed-in.
     if not request.user_email:
         result = {u'error': u'Please sign in to star pastes'}
         return JsonResponse(result, status=403)
@@ -160,7 +186,13 @@ def api_star(request):
     # We construct the star id ourselves so that if you star something
     # twice it doesn't create multiple stars for the same paste.
     star_id = u'%s/%s' % (request.user_email, paste.pk)
-    starred = Star.objects.create(id=star_id, author=request.user_email, paste_id=paste_id)
+    starred, _ = Star.objects.get_or_create(
+        id=star_id,
+        defaults = {
+            'author': request.user_email,
+            'paste_id': paste_id,
+        }
+    )
 
     result = {
         'id': starred.id,
@@ -182,20 +214,18 @@ def api_paste_list(request):
     except InvalidPage:
         return redirect('api_paste_list')
 
-    pastes = [p.to_dict() for p in pastes]
-
-    if pastes.has_next:
-        next_page = request.path + '?p=' + pastes.next_page_number
+    if pastes.has_next():
+        next_page = '%s?p=%s' % (request.path, pastes.next_page_number())
         next_page = request.build_absolute_uri(next_page)
     else:
         next_page = None
 
     result = {
-        'pastes': pastes,
+        'pastes': [p.to_dict() for p in pastes],
         'next': next_page,
     }
 
-    return JsonResponse({})
+    return JsonResponse(result)
 
 
 def api_paste_detail(request, paste_id):

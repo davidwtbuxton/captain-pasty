@@ -2,9 +2,11 @@
 
 {% block content %}
 
+<h1>Administration Things</h1>
+
 <form method="post">
 	{% csrf_token %}
-	<p>Start a task to re-save all pastes.</p>
+	<p>Start a task to re-save all pastes and update the search index.</p>
 	<button class="btn btn-default" type="submit">Re-save pastes</button>
 </form>
 

@@ -123,3 +123,14 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                 u'tags': u'{}',
             }
         )
+
+
+class ApiRootTestCase(AppEngineTestCase):
+    def test_redirects_to_api_info(self):
+        url = reverse('api_root')
+
+        response = self.client.get(url)
+
+        self.assertEqual(resonse.status_code, 302)
+        self.assertEqual(response['Location'], '')
+

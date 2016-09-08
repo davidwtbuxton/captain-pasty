@@ -79,3 +79,12 @@ def get_all_highlight_css():
 
 #: Mapping of {<style-name>: <css>}.
 highlight_css = dict(get_all_highlight_css())
+
+
+def get_url_patterns(prefix=None):
+    """Returns a list of url definitions, optionally filtered by patterns
+    matching the prefix.
+
+    Each item is a pair of (name, pattern).
+    """
+    return []

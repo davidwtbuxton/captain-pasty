@@ -11,8 +11,9 @@
 
 
 
-	<button type="button" class="btn btn-default btn-sm star__action" data-paste-id="{{ paste.pk }}">
-		<span class="glyphicon glyphicon-star" aria-hidden="true"></span> Star
+	<button type="button" class="btn btn-default btn-sm star__action" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+		<span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+		<span class="star__status">Star</span>
 	</button>
 </div>
 
