@@ -8,8 +8,15 @@
     "url": "https://github.com/davidwtbuxton/captain-pasty.git"
   },
   "dependencies": {
-    "bootstrap": "~3.3.7",
+    "bulma": "^0.1.2",
+    "font-awesome": "^4.6.3",
     "jquery": "~3.1.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "node-sass": "^3.9.3"
+  },
+  "scripts": {
+    "build": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss static/src/styles.sass static/styles.css",
+    "watch": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss --watch static/src/styles.sass static/styles.css"
+  }
 }
