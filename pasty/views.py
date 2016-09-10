@@ -1,4 +1,5 @@
 import json
+import zipfile
 
 import jsonschema
 import mistune
@@ -50,13 +51,15 @@ def paste_search(request):
     query = request.GET.get('q')
     page = request.GET.get('p')
 
-    query = index.build_query(request.GET)
+    terms = index.build_query(request.GET)
+    query = u' '.join(term for term, label in terms).encode('utf-8')
     pastes = index.search_pastes(query, page) if query else []
 
     context = {
         'pastes': pastes,
         'section': 'paste_search',
         'starred_pastes': get_starred_pastes(request.user_email),
+        'tags': [label for term, label in terms],
     }
 
     return render(request, 'paste_list.html', context)
@@ -71,6 +74,22 @@ def paste_detail(request, paste_id):
     }
 
     return render(request, 'paste_detail.html', context)
+
+
+def paste_download(request, paste_id):
+    """Returns a zip with all the files."""
+    paste = get_object_or_404(Paste, pk=paste_id)
+    filename = paste.filename.encode('latin-1') + '.zip'
+    header = 'attachment; filename="%s"' % filename
+    response = HttpResponse(content_type='application/zip')
+    response['Content-disposition'] = header
+
+    with zipfile.ZipFile(response, mode='w', compression=zipfile.ZIP_DEFLATED) as archive:
+        for pasty_file in paste.files.all():
+            name = pasty_file.filename
+            archive.writestr(name, pasty_file.content.read())
+
+    return response
 
 
 def paste_create(request):
@@ -250,7 +269,7 @@ def api_paste_create(request):
         result = {'error': 'Invalid request'}
 
         return JsonResponse(result, status=400)
-    
+
     try:
         utils.paste_validator.validate(data)
     except jsonschema.ValidationError as err:

@@ -67,21 +67,24 @@ def search_pastes(query, cursor_string):
 
 
 def build_query(qdict):
-    """Returns a query string from search params."""
+    """Returns a list of (term, label) pairs from search params.
+
+    Combine the term parts to search for all parameters.
+    """
     terms = []
 
     author = qdict.get('author')
     if author:
         term = u'author:"%s"' % author
-        terms.append(term)
+        label = u'by %s' % author
+        terms.append((term, label))
 
     q = qdict.get('q')
     if q:
-        terms.append(q)
+        label = u'containing "%s"' % q
+        terms.append((q, label))
 
-    query = u' '.join(terms)
-
-    return query.encode('utf-8')
+    return terms
 
 
 def index_directory(path):

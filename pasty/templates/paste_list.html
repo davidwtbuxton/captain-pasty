@@ -2,48 +2,40 @@
 
 {% block content %}
 
-<div class="row">
+<div class="col-sm-8">
+	<h1>Pastes</h1>
 
-	<div class="col-sm-8">
-		<h1>Pastes</h1>
-
-	{% for paste in pastes %}
-		<div class="paste-summary">
-			{% include '_paste_meta.html' %}
-
-			<div class="paste__content">
-				<a href="{% url 'paste_detail' paste.pk %}">
-					{{ paste.summary|safe }}
-				</a>
-			</div>
+	{% if tags %}
+		<div class="search-tags">
+		{% for tag in tags %}
+			<span class="tag is-info">{{ tag }}</span>
+		{% endfor %}
 		</div>
-	{% empty %}
-		<p>No pastes. <a href="{% url 'paste_create' %}">Why not add one?</a></p>
+	{% endif %}
 
-	{% endfor %}
+{% for paste in pastes %}
+	<div class="paste-summary">
+		{% include '_paste_meta.html' %}
+
+		<div class="paste__content{% if paste.num_lines > 10 %} fade-out-bottom{% endif %}">
+			<a href="{% url 'paste_detail' paste.pk %}">
+				{{ paste.summary|safe }}
+			</a>
+		</div>
 	</div>
+{% empty %}
+	<p>No pastes. <a href="{% url 'paste_create' %}">Why not add one?</a></p>
 
-	{% if pastes.has_next %}
-		<nav>
-			<ul class="pager">
-				<li><a href="?p={{ pastes.next_page_number }}&q={{ request.GET.q|default:'' }}">Next</a></li>
-			</ul>
-		</nav>
-	{% endif %}
-
-	{% if starred_pastes %}
-		<div class="stars col-sm-4">
-			<span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-			<ul class="stars__list">
-			{% for paste in starred_pastes %}
-				<li class="stars__summary">
-					<a href="{% url 'paste_detail' paste.pk %}">{{ paste }}</a>
-				</li>
-			{% endfor %}
-			</ul>
-		</div>
-	{% endif %}
-
+{% endfor %}
 </div>
+
+{% if pastes.has_next %}
+	<nav>
+		<ul class="pager">
+			<li><a href="?p={{ pastes.next_page_number }}&q={{ request.GET.q|default:'' }}">Next</a></li>
+		</ul>
+	</nav>
+{% endif %}
+
 
 {% endblock %}

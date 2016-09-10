@@ -2,25 +2,27 @@
 
 {% block content %}
 
-<h1>New Paste</h1>
+<h1 class="title">New Paste</h1>
 
 <form method="post">
 	{% csrf_token %}
 
-	<div class="row">
-		<div class="form-group form-group-sm">
-			{% render_input form.description class='form-control' placeholder='Description…' %}
-		</div>
+	<div class="control">
+		{% render_label form.description class='label' %}
+		{% render_input form.description class='input' placeholder='Description…' %}
 	</div>
 
-	<div class="row paste-form__file form-group-sm">
-		{% render_input form.filename class='form-control paste-form__filename' placeholder='Filename including extension…' %}
-		<br>
-		{% render_input form.content class='form-control paste-form__content' %}
+	<div class="control">
+		{% render_label form.filename class='label' %}
+		{% render_input form.filename class='input paste-form__filename' placeholder='Filename including extension…' %}
 	</div>
 
-	<div class="row">
-		<button type="submit" class="btn btn-default">Create</button>
+	<div class="control">
+		{% render_input form.content class='textarea paste-form__content' %}
+	</div>
+
+	<div class="control">
+		<button type="submit" class="button is-primary">Create</button>
 	</div>
 
 </form>

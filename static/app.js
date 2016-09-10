@@ -10,7 +10,9 @@ $(document).ready(function() {
 	}
 
 	function star_success() {
+		$('.star__action').addClass('is-disabled');
 		$('.star__action .star__status').html('Starred');
+		$('.star__action .fa').addClass('fa-star').removeClass('fa-star-o');
 	}
 
 	$('.star__action').click(star_paste);

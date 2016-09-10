@@ -19,4 +19,5 @@ urlpatterns = [
     url(r'^about/$', views.about, name='about'),
     url(r'^admin/$', views.admin, name='admin'),
     url(r'^([a-zA-Z0-9]+)/$', views.paste_detail, name='paste_detail'),
+    url(r'^([a-zA-Z0-9]+).zip$', views.paste_download, name='paste_download'),
 ]

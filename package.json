@@ -16,7 +16,7 @@
     "node-sass": "^3.9.3"
   },
   "scripts": {
-    "build": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss static/src/styles.sass static/styles.css",
-    "watch": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss --watch static/src/styles.sass static/styles.css"
+    "build": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss static/src/styles.scss static/styles.css",
+    "watch": "node-sass --include-path static/src/bulma --include-path static/src/font-awesome/scss --watch static/src/styles.scss static/styles.css"
   }
 }

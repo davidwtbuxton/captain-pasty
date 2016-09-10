@@ -1,0 +1,49 @@
+$fa-font-path: "src/font-awesome/fonts";
+
+@import "bulma";
+@import "font-awesome";
+
+
+html {
+	background-color: #fff;
+}
+
+.header {
+	border-bottom: 1px solid #ccc;
+}
+
+.fade-out-bottom {
+	position: relative;
+
+	&:after {
+		background-image: linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0),
+			rgba(255, 255, 255, 0.8)
+			90%);
+		bottom: 0;
+		content: "";
+		height: 4em;
+		left: 0;
+		pointer-events: none;
+		position: absolute;
+		width: 100%;
+		z-index: 1;
+	}
+}
+
+.stars {
+	font-size: 12px;
+
+	.stars__list {
+		margin-left: 24px;
+	}
+}
+
+.paste-summary {
+	margin-bottom: 35px;
+}
+
+.paste-actions {
+	margin-bottom: 20px;
+}
