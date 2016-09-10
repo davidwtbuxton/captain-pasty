@@ -15,7 +15,11 @@ from django.views.decorators.http import require_http_methods
 from . import index
 from . import utils
 from .forms import PasteForm
-from .models import Paste, Star, get_starred_pastes
+from .models import Paste, Star
+
+
+def home(request):
+    return redirect('paste_create')
 
 
 def paste_list(request):
@@ -33,7 +37,6 @@ def paste_list(request):
     context = {
         'pastes': pastes,
         'section': 'paste_list',
-        'starred_pastes': get_starred_pastes(request.user_email),
     }
 
     return render(request, 'paste_list.html', context)
@@ -58,7 +61,6 @@ def paste_search(request):
     context = {
         'pastes': pastes,
         'section': 'paste_search',
-        'starred_pastes': get_starred_pastes(request.user_email),
         'tags': [label for term, label in terms],
     }
 
@@ -67,10 +69,14 @@ def paste_search(request):
 
 def paste_detail(request, paste_id):
     paste = get_object_or_404(Paste, pk=paste_id)
+    try:
+        starred = Star.objects.get(author=request.user_email, paste_id=paste.pk)
+    except Star.DoesNotExist:
+        starred = None
 
     context = {
         'paste': paste,
-        'starred_pastes': get_starred_pastes(request.user_email),
+        'starred': starred,
     }
 
     return render(request, 'paste_detail.html', context)
@@ -129,7 +135,6 @@ def paste_create(request):
     context = {
         'form': form,
         'section': 'paste_create',
-        'starred_pastes': get_starred_pastes(request.user_email),
 
     }
 

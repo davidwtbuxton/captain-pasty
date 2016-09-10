@@ -13,7 +13,8 @@ urlpatterns = [
     ])),
 
     url(r'^highlight-styles.css$', views.highlight_styles, name='highlight_styles'),
-    url(r'^$', views.paste_create, name='paste_create'),
+    url(r'^$', views.home, name='home'),
+    url(r'^new/$', views.paste_create, name='paste_create'),
     url(r'^recent/$', views.paste_list, name='paste_list'),
     url(r'^search/$', views.paste_search, name='paste_search'),
     url(r'^about/$', views.about, name='about'),

@@ -43,7 +43,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'pasty.context_processors.pasty',
             ],
-            'builtins': ['pasty.templatetags.reform'],
+            'builtins': ['pasty.templatetags.pastytags'],
         },
     },
 ]

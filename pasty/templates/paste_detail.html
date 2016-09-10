@@ -2,49 +2,44 @@
 
 {% block content %}
 
-<h1 class="title">{{ paste }}</h1>
+<h1 class="title">{{ paste.filename }}</h1>
 
 <div class="paste-actions">
 	<a class="button" href="{% url 'paste_create' %}?fork={{ paste.pk }}">
-		<span class="icon">
+		<span class="icon" aria-hidden="true">
 			<i class="fa fa-code-fork"></i>
 		</span>
 		<span>Fork this paste</span>
 	</a>
 
-
-
-	<button type="button" class="button star__action" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
-		<span class="icon" aria-hidden="true">
-			<i class="fa fa-star-o"></i>
-		</span>
-		<span class="star__status">Star</span>
-	</button>
-
 	<a class="button" href="{% url 'paste_download' paste.pk %}">
-		<span class="icon">
+		<span class="icon" aria-hidden="true">
 			<i class="fa fa-download"></i>
 		</span>
 		<span>Download zip</span>
 	</a>
+
+	{% if starred %}
+		<button type="button" class="button star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+			<span class="icon" aria-hidden="true">
+				<i class="fa fa-star"></i>
+			</span>
+			<span class="star__status">Star{% if starred %}red{% endif %}</span>
+		</button>
+	{% else %}
+		<button type="button" class="button star__action" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+			<span class="icon" aria-hidden="true">
+				<i class="fa fa-star-o"></i>
+			</span>
+			<span class="star__status">Star</span>
+		</button>
+	{% endif %}
+
 </div>
 
 <div class="paste">
 
-	<div class="paste-summary">
-		<p class="paste-summary__created">
-			Created {{ paste.created|since }}
-
-			– {{ paste.num_lines }} line{{ paste.num_lines|pluralize }} in {{ paste.num_files }} file{{ paste.num_files|pluralize }}
-
-			{% if paste.forked_from %}
-				– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.forked_from }}</a>
-			{% endif %}
-		</p>
-		<p class="paste-summary__description">
-			{{ paste.description }}
-		</p>
-	</div>
+	{% include '_paste_meta.html' %}
 
 	<div class="paste__content">
 		{% for file in paste.files.all %}

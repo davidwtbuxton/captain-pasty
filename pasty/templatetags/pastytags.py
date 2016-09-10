@@ -61,3 +61,24 @@ def since(dt, arg=None):
 
     else:
         return _since(dt, moment) + u' ago'
+
+
+@register.simple_tag
+def params(qdict, **kwargs):
+    """Helper for building a query string, adding and removing params to
+    an existing query dict.
+
+    In a template, use it like:
+
+    {% params request.GET page=4 %}
+    """
+    qdict = qdict.copy()
+
+    for name, value in kwargs.items():
+        if value is None:
+            if name in qdict:
+                del qdict[name]
+        else:
+            qdict[name] = value
+
+    return qdict.urlencode()

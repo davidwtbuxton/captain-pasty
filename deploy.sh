@@ -32,6 +32,7 @@ fi
 
 echo "Deploying '$user_application' version '$user_version'."
 
+npm run build
 appcfg.py --application "$user_application" --version "$user_version" $@ update .
 
 popd

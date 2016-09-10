@@ -1,15 +1,31 @@
-$fa-font-path: "src/font-awesome/fonts";
+$fa-font-path: "fonts";
+$body-background: #fff;
 
 @import "bulma";
 @import "font-awesome";
 
 
 html {
-	background-color: #fff;
+	height: 100vh;
+}
+
+.captain-pasty {
+	img {
+		border-radius: 50%;
+		max-height: 40px;
+	}
+	span {
+		margin-left: 10px;
+	}
 }
 
 .header {
 	border-bottom: 1px solid #ccc;
+}
+
+.pasty-main {
+	padding-bottom: 10px;
+	padding-top: 20px;
 }
 
 .fade-out-bottom {
@@ -46,4 +62,20 @@ html {
 
 .paste-actions {
 	margin-bottom: 20px;
+}
+
+.paste-form__content {
+	max-height: unset;
+}
+
+@media (min-width: $tablet) {
+
+	.paste-form__content {
+		height: 600px;
+	}
+}
+
+.highlight pre {
+	width: 100%;
+	white-space: pre-wrap;
 }

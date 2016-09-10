@@ -11,14 +11,17 @@
 	<header class="header">
 		<nav class="nav container">
 			<div class="nav-left">
-				<a class="nav-item is-brand" href="/">Captain Pasty</a>
+				<a class="nav-item is-brand captain-pasty{% if section == 'about' %} is-active{% endif %}" href="{% url 'about' %}">
+					<img src="/static/pic/captain-pasty.jpg">
+					<span class="is-hidden-mobile">Captain Pasty</span>
+				</a>
 				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New Paste</a>
 				<a class="nav-item{% if section == 'paste_list' %} is-active{% endif %}" href="{% url 'paste_list' %}">Pastes</a>
 				<form class="nav-item" action="{% url 'paste_search' %}">
 					<input class="input" type="text" name="q" placeholder="Search">
 					<button class="button" type="submit">Submit</button>
 				</form>
-				<a class="nav-item{% if section == 'about' %} is-active{% endif %}" href="{% url 'about' %}">About</a>
+
 				{% if request.user_email %}
 					<a class="nav-item" href="{{ logout_url }}">Sign Out</a>
 				{% else %}
@@ -28,7 +31,7 @@
 		</nav>
 	</header>
 
-	<div class="section">
+	<div class="section pasty-main">
 		<main class="container content">
 			<div class="columns">
 				<div class="column">
@@ -57,7 +60,11 @@
 		</main>
 	</div>
 
-	<script src="/static/src/jquery/jquery.min.js"></script>
-	<script src="/static/app.js"></script>
+	{% if debug %}
+		<script src="/static/src/jquery/dist/jquery.min.js"></script>
+		<script src="/static/src/app.js"></script>
+	{% else %}
+		<script src="/static/app.min.js"></script>
+	{% endif %}
 </body>
 </html>

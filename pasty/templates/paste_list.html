@@ -15,6 +15,7 @@
 
 {% for paste in pastes %}
 	<div class="paste-summary">
+		<p><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename }}</a></p>
 		{% include '_paste_meta.html' %}
 
 		<div class="paste__content{% if paste.num_lines > 10 %} fade-out-bottom{% endif %}">
@@ -31,9 +32,12 @@
 
 {% if pastes.has_next %}
 	<nav>
-		<ul class="pager">
-			<li><a href="?p={{ pastes.next_page_number }}&q={{ request.GET.q|default:'' }}">Next</a></li>
-		</ul>
+		<a class="button" href="?{% params request.GET p=pastes.next_page_number %}">
+			<span class="icon" aria-hidden="true">
+				<i class="fa fa-arrow-circle-right"></i>
+			</span>
+			<span>Next</span>
+		</a>
 	</nav>
 {% endif %}
 

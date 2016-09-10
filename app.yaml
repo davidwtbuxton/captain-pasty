@@ -17,3 +17,14 @@ handlers:
   - url: /.*
     script: project.wsgi.application
     secure: always
+
+skip_files:
+  - ^(.*/)?#.*#$
+  - ^(.*/)?.*~$
+  - ^(.*/)?.*\.py[co]$
+  - ^(.*/)?.*/RCS/.*$
+  - ^(.*/)?\..*$
+
+  - ^node_modules/
+  - ^static/src/
+  - ^libs/.*\.(egg|dist)-info

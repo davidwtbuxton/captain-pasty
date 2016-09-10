@@ -1,23 +1,17 @@
-<div class="paste-summary__meta">
-	<p>
-		<span class="paste-summary__author tag">
-			{% if paste.author %}
-				<a href="{% url 'paste_search' %}?author={{ paste.author }}">{{ paste.author }}</a>
-			{% else %}
-				anonymous
-			{% endif %}
-		</span>
-		/
-		<span class="paste-summary__filename"><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename }}</a></span>
-	</p>
-
+<div class="paste-summary-meta">
 	<p class="paste-summary__created">
-		Created {{ paste.created|since }}
+		Created {{ paste.created|since }} by
+		{% if paste.author %}
+			<a href="{% url 'paste_search' %}?author={{ paste.author }}">{{ paste.author }}</a>
+		{% else %}
+			anonymous
+		{% endif %}
 
 		– {{ paste.num_lines }} line{{ paste.num_lines|pluralize }} in {{ paste.num_files }} file{{ paste.num_files|pluralize }}
 
-		{% if paste.forked_from %}– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.forked_from }}</a>{% endif %}
-
+		{% if paste.forked_from %}
+			– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.forked_from }}</a>
+		{% endif %}
 	</p>
 	<p class="paste-summary__description">
 		{{ paste.description }}

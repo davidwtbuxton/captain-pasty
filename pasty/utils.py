@@ -54,7 +54,7 @@ def highlight_content(content, language=None, filename=None):
 
     style = PYGMENTS_STYLE
     cssclass = 'highlight highlight__' + style
-    formatter = formatters.HtmlFormatter(style=style, cssclass=cssclass, linenos='table')
+    formatter = formatters.HtmlFormatter(style=style, cssclass=cssclass)
     highlighted = pygments.highlight(content, lexer, formatter)
 
     return highlighted
@@ -99,7 +99,7 @@ def count_lines(content):
         fh = io.StringIO(content)
     except TypeError:
         fh = io.BytesIO(content)
-        
+
     count = 0
 
     for count, _ in enumerate(fh, 1):
