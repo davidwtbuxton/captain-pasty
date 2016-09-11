@@ -9,7 +9,7 @@ from pygments import styles
 from pygments.util import ClassNotFound
 
 
-PYGMENTS_STYLE = 'trac'
+PYGMENTS_STYLE = 'autumn'
 
 
 def get_current_user_email():
@@ -52,9 +52,9 @@ def highlight_content(content, language=None, filename=None):
             # it is. So let's treat it as plain text.
             lexer = lexers.get_lexer_by_name('text')
 
-    style = PYGMENTS_STYLE
-    cssclass = 'highlight highlight__' + style
-    formatter = formatters.HtmlFormatter(style=style, cssclass=cssclass)
+    style_class = highlight_css[PYGMENTS_STYLE][0]
+    cssclass = 'highlight ' + style_class
+    formatter = formatters.HtmlFormatter(style=PYGMENTS_STYLE, cssclass=cssclass)
     highlighted = pygments.highlight(content, lexer, formatter)
 
     return highlighted
@@ -77,11 +77,11 @@ def get_all_highlight_css():
         css = formatter.get_style_defs()
         css = (u'/* Pygment\'s %s style. */\n' % name) + css
 
-        yield (name, css)
+        yield (name, cssclass, css)
 
 
-#: Mapping of {<style-name>: <css>}.
-highlight_css = dict(get_all_highlight_css())
+#: Mapping of {<style-name>: (<class-name>, <css>)}.
+highlight_css = {name: (klass, style) for name, klass, style in get_all_highlight_css()}
 
 
 def get_url_patterns(prefix=None):

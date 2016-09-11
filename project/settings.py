@@ -10,6 +10,7 @@ ON_PROD = environment.is_production_environment()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = AppConfig.get().secret_key
 DEBUG = not ON_PROD
+INTERNAL_IPS = ('127.0.0.1', '::1')
 
 INSTALLED_APPS = [
     'djangae',

@@ -156,7 +156,7 @@ def about(request):
 
 
 def highlight_styles(request):
-    content = u'\n\n'.join(utils.highlight_css.values())
+    content = u'\n\n'.join(css for _, css in utils.highlight_css.values())
 
     return HttpResponse(content, content_type='text/css')
 

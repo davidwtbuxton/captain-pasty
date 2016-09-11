@@ -4,3 +4,4 @@
 /libs/
 /node_modules/
 /static/styles.css
+/static/app.min.js

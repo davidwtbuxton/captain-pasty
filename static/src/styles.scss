@@ -21,11 +21,16 @@ html {
 
 .header {
 	border-bottom: 1px solid #ccc;
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: 2;
 }
 
 .pasty-main {
 	padding-bottom: 10px;
-	padding-top: 20px;
+	padding-top: 80px;
 }
 
 .fade-out-bottom {
@@ -58,6 +63,16 @@ html {
 
 .paste-summary {
 	margin-bottom: 35px;
+
+	.code pre {
+		border: 1px solid #eee;
+		border-radius: 4px;
+		padding: 10px;
+
+		&:hover {
+			border-color: $link;
+		}
+	}
 }
 
 .paste-actions {
@@ -78,4 +93,6 @@ html {
 .highlight pre {
 	width: 100%;
 	white-space: pre-wrap;
+	background-color: unset;
+	color: unset;
 }
