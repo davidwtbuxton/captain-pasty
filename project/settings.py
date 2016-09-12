@@ -35,8 +35,6 @@ ROOT_URLCONF = 'project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -44,10 +42,18 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'pasty.context_processors.pasty',
             ],
+            'loaders': ['django.template.loaders.app_directories.Loader'],
+            # So templates don't have to {% load %} anything.
             'builtins': ['pasty.templatetags.pastytags'],
         },
     },
 ]
+
+# Enable template caching in production.
+if not DEBUG:
+    opts = TEMPLATES[0]['OPTIONS']
+    opts['loaders'] = [('django.template.loaders.cached.Loader', opts['loaders'])]
+
 
 WSGI_APPLICATION = 'project.wsgi.application'
 

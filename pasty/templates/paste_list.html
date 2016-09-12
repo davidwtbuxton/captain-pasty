@@ -15,7 +15,7 @@
 
 {% for paste in pastes %}
 	<div class="paste-summary">
-		<p><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename }}</a></p>
+		<h3><a href="{% url 'paste_detail' paste.pk %}">{{ paste.filename }}</a></h3>
 		{% include '_paste_meta.html' %}
 
 		<div class="paste__content{% if paste.num_lines > 10 %} fade-out-bottom{% endif %}">

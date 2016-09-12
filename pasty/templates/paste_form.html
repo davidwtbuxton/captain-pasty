@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1 class="title">New Paste</h1>
+<h1 class="title">New paste</h1>
 
 <form method="post">
 	{% csrf_token %}
@@ -22,7 +22,8 @@
 	</div>
 
 	<div class="control">
-		<button type="submit" class="button is-primary is-medium">Create</button>
+		<button class="button is-medium">Add file</button>
+		<button type="submit" class="button is-primary is-medium">Create paste</button>
 	</div>
 
 </form>

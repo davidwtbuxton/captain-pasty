@@ -10,6 +10,7 @@ register = template.Library()
 
 @register.simple_tag
 def render_label(bound_field, **kwargs):
+    """Helper to render a form field label, adding attributes to the element."""
     markup = bound_field.label_tag(attrs=kwargs)
 
     return markup
@@ -17,6 +18,7 @@ def render_label(bound_field, **kwargs):
 
 @register.simple_tag
 def render_input(bound_field, **kwargs):
+    """Helper to render a form field input, adding attributes to the element."""
     # This logic is copied from BoundField.__str__.
     markup = bound_field.as_widget(attrs=kwargs)
 
@@ -55,12 +57,14 @@ def _since(dt, moment):
 @register.filter
 def since(dt, arg=None):
     moment = timezone.now()
+    delta = datetime.timedelta(days=2)
 
-    if (moment - dt) > datetime.timedelta(hours=23):
-        return defaultfilters.date(dt, arg)
+    # Only do fancy things if it's older than delta.
+    if (moment - dt) < delta:
+        return _since(dt, moment) + u' ago'
 
     else:
-        return _since(dt, moment) + u' ago'
+        return defaultfilters.date(dt, arg)
 
 
 @register.simple_tag

@@ -15,7 +15,7 @@
 					<img src="/static/pic/captain-pasty.jpg">
 					<span class="is-hidden-mobile">Captain Pasty</span>
 				</a>
-				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New Paste</a>
+				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New paste</a>
 				<a class="nav-item{% if section == 'paste_list' %} is-active{% endif %}" href="{% url 'paste_list' %}">Pastes</a>
 				<form class="nav-item" action="{% url 'paste_search' %}">
 					<input class="input" type="text" name="q" placeholder="Search">
@@ -23,9 +23,9 @@
 				</form>
 
 				{% if request.user_email %}
-					<a class="nav-item" href="{{ logout_url }}">Sign Out</a>
+					<a class="nav-item" href="{{ logout_url }}">Sign out</a>
 				{% else %}
-					<a class="nav-item" href="{{ login_url }}">Sign In</a>
+					<a class="nav-item" href="{{ login_url }}">Sign in</a>
 				{% endif %}
 			</div>
 		</nav>
@@ -44,7 +44,7 @@
 						<span class="icon" aria-hidden="true">
 							<i class="fa fa-star"></i>
 						</span>
-						Starred Pastes
+						Starred pastes
 					</h2>
 
 					<ul class="stars__list">

@@ -1,6 +1,6 @@
 <div class="paste-summary-meta">
 	<p class="paste-summary__created">
-		Created {{ paste.created|since }} by
+		Created <time datetime="{{ paste.created|date:'c' }}" title="{{ paste.created|date:'c' }}">{{ paste.created|since }}</time> by
 		{% if paste.author %}
 			<a href="{% url 'paste_search' %}?author={{ paste.author }}">{{ paste.author }}</a>
 		{% else %}

@@ -35,6 +35,7 @@ def paste_list(request):
         return redirect('paste_list')
 
     context = {
+        'page_title': u'Pastes',
         'pastes': pastes,
         'section': 'paste_list',
     }
@@ -59,6 +60,7 @@ def paste_search(request):
     pastes = index.search_pastes(query, page) if query else []
 
     context = {
+        'page_title': u'Pastes',
         'pastes': pastes,
         'section': 'paste_search',
         'tags': [label for term, label in terms],
@@ -75,6 +77,7 @@ def paste_detail(request, paste_id):
         starred = None
 
     context = {
+        'page_title': paste.filename,
         'paste': paste,
         'starred': starred,
     }
@@ -133,6 +136,7 @@ def paste_create(request):
         form  = PasteForm(initial=initial)
 
     context = {
+        'page_title': u'New paste',
         'form': form,
         'section': 'paste_create',
 
@@ -148,6 +152,7 @@ def about(request):
         changelog = safestring.mark_safe(changelog)
 
     context = {
+        'page_title': u'About',
         'section': 'about',
         'changelog': changelog,
     }
