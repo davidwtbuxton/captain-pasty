@@ -2,7 +2,6 @@ import datetime
 
 from django import template
 from django.template import defaultfilters
-from django.utils import timezone
 
 
 register = template.Library()
@@ -56,7 +55,7 @@ def _since(dt, moment):
 
 @register.filter
 def since(dt, arg=None):
-    moment = timezone.now()
+    moment = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=2)
 
     # Only do fancy things if it's older than delta.

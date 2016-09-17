@@ -50,7 +50,7 @@
 					<ul class="stars__list">
 					{% for paste in starred_pastes %}
 						<li class="stars__summary">
-							<a href="{% url 'paste_detail' paste.pk %}">{{ paste }}</a>
+							<a href="{% url 'paste_detail' paste.key.id %}">{{ paste }}</a>
 						</li>
 					{% endfor %}
 					</ul>

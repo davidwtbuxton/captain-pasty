@@ -16,4 +16,16 @@ $(document).ready(function() {
 	}
 
 	$('.star__action').click(star_paste);
+
+	function add_file_inputs() {
+		/* Copy the filename and textarea inputs for a new file. */
+		var $old_group = $('.paste-form__file-group').last(),
+			$new_group = $old_group.clone();
+
+		$new_group.find('.paste-form__filename').val('');
+		$new_group.find('.paste-form__content').val('');
+		$new_group.insertAfter($old_group);
+	}
+
+	$('.paste-form__add-file').click(add_file_inputs);
 });

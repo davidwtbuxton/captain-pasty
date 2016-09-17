@@ -1,7 +1,5 @@
 from django import forms
 
-from .models import Paste
-
 
 class NoLabelSuffix(object):
     def __init__(self, *args, **kwargs):
@@ -10,12 +8,7 @@ class NoLabelSuffix(object):
         super(NoLabelSuffix, self).__init__(*args, **kwargs)
 
 
-class PasteForm(NoLabelSuffix, forms.ModelForm):
+class PasteForm(NoLabelSuffix, forms.Form):
+    description = forms.CharField(required=False)
+    filename = forms.CharField(required=False)
     content = forms.CharField(widget=forms.Textarea)
-
-    class Meta:
-        model = Paste
-        fields = [
-            'description',
-            'filename',
-        ]

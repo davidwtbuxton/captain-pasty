@@ -80,11 +80,24 @@ $body-background: #fff;
 	max-height: unset;
 }
 
+.paste-form__add-file {
+	cursor: pointer;
+}
+
 @media (min-width: $tablet) {
 
 	.paste-form__content {
 		height: 300px;
 	}
+}
+
+.paste__file {
+	margin-top: 18px;
+}
+
+h2.paste__file-name {
+	border-bottom: 1px solid $border;
+	font-size: 18px;
 }
 
 .highlight pre {

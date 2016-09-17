@@ -1,11 +1,9 @@
-from djangae import fields
-from djangae.contrib.pagination import paginated_model
-from django.core.files.base import ContentFile
-from django.db import models
-from django.utils import encoding
+import cloudstorage
+from django.core.urlresolvers import reverse
 from django.utils import safestring
 from django.utils import timezone
-
+from google.appengine.api import app_identity
+from google.appengine.ext import ndb
 from . import utils
 
 
@@ -13,58 +11,86 @@ BUCKET_KEY = 'CLOUD_STORAGE_BUCKET'
 language_choices = [(name, name) for name in utils.get_language_names()]
 
 
-def make_name_for_storage(instance, filename):
+def make_name_for_storage(paste, filename):
     """Returns a name for an object in Cloud Storage (without a bucket)."""
     # Like 'pasty/2016/03/01/1234567890/setup.py'.
     # BUG!!!! Need to handle 2 files with the same name for 1 paste.
     dt = timezone.now()
-    template = u'pasty/{dt:%Y/%m/%d}/{filename}'
-    name = template.format(dt=dt, filename=filename)
+    template = u'pasty/{dt:%Y/%m/%d}/{id}/{filename}'
+    name = template.format(dt=dt, id=paste.key.id(), filename=filename)
     # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
     name = name.encode('utf-8')
 
     return name
 
 
-class PastyFile(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    filename = models.CharField(max_length=200, blank=True)
-    content = models.FileField(upload_to=make_name_for_storage)
-    num_lines = models.BigIntegerField(blank=True, null=True)
+class PastyFile(ndb.Model):
+    created = ndb.DateTimeProperty(auto_now_add=True)
+    filename = ndb.StringProperty()
+    path = ndb.StringProperty()
+    num_lines = ndb.IntegerProperty(default=0)
 
     def content_highlight(self):
         """Returns the file content with syntax highlighting."""
-        text = self.content.read()
+        with self.open('r') as fh:
+            text = fh.read()
+
         markup = utils.highlight_content(text, filename=self.filename)
 
         return safestring.mark_safe(markup)
 
+    @classmethod
+    def bucket_path(cls, path):
+        bucket = app_identity.get_default_gcs_bucket_name()
 
-@encoding.python_2_unicode_compatible
-@paginated_model(orderings=['created'])
-class Paste(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    author = models.EmailField(blank=True)
-    filename = models.CharField(max_length=200, blank=True)
-    description = models.CharField(max_length=200, blank=True)
-    forked_from = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
-    files = fields.RelatedListField(PastyFile)
-    summary = models.TextField(editable=False)
-    num_lines = models.BigIntegerField(null=True, blank=True)
-    num_files = models.BigIntegerField(null=True, blank=True)
+        return '/%s/%s' % (bucket, path)
 
-    def __str__(self):
-        author = self.author or u'anonymous'
-        name = self.filename or self.pk
+    @classmethod
+    def from_content(self, paste, filename, content):
+        """Save the content to cloud storage and return a new PastyFile."""
+        num_lines = utils.count_lines(content)
+        path = make_name_for_storage(paste, filename)
 
-        return u'%s / %s' % (author, name)
+        if isinstance(content, unicode):
+            content = content.encode('utf-8')
 
-    def save(self, *args, **kwargs):
-        files = list(self.files.all())
-        self.num_files = len(files)
-        self.num_lines = sum(f.num_lines or 0 for f in files)
+        obj = PastyFile(filename=filename, path=path, num_lines=num_lines)
 
-        return super(Paste, self).save(*args, **kwargs)
+        with obj.open('w') as fh:
+            fh.write(content)
+
+        return obj
+
+    def open(self, mode='r'):
+        path = self.bucket_path(self.path)
+
+        return cloudstorage.open(path, mode)
+
+
+
+class Paste(ndb.Model):
+    created = ndb.DateTimeProperty(auto_now_add=True)
+    author = ndb.StringProperty()
+    filename = ndb.StringProperty()
+    description = ndb.StringProperty()
+    forked_from = ndb.KeyProperty(kind='Paste')
+    files = ndb.LocalStructuredProperty(PastyFile, repeated=True)
+    preview = ndb.TextProperty()
+
+    def __unicode__(self):
+        return u'%s / %s' % (self.author, self.filename)
+
+    @ndb.ComputedProperty
+    def num_files(self):
+        return len(self.files)
+
+    @ndb.ComputedProperty
+    def num_lines(self):
+        return sum(pasty_file.num_lines for pasty_file in self.files)
+
+    @property
+    def download_url(self):
+        return reverse('paste_download', self.key.id())
 
     def save_content(self, content, filename=None):
         # File contents are stored in Cloud Storage. The first file is
@@ -72,58 +98,30 @@ class Paste(models.Model):
         # of dicts, where each dict has a key for 'filename', and 'path',
         # with 'path' being the object name in Cloud Storage (minus the bucket).
         if not self.files:
-            self.summary = utils.summarize_content(content, filename=filename)
+            self.preview = utils.summarize_content(content, filename=filename)
             self.filename = filename
 
-        num_lines = utils.count_lines(content)
-        pasty_file = PastyFile(filename=filename, num_lines=num_lines)
-        pasty_file.content.save(filename, ContentFile(content))
-        pasty_file.save()
+        pasty_file = PastyFile.from_content(
+            self,
+            filename=filename,
+            content=content,
+        )
 
-        self.files.add(pasty_file)
+        self.files.append(pasty_file)
 
-        return self.save()
+        return self.put()
 
-    def to_dict(self):
-        """JSON representation."""
-        info = {
-            'id': self.pk,
-            'created': self.created,
-            'author': self.author,
-            'filename': self.filename,
-            'description': self.description,
-            'forked_from': self.forked_from,
-            'files': [],
-            'summary': self.summary,
-        }
-
-        for pasty_file in self.files.all():
-            file_info = {
-                'id': pasty_file.pk,
-                'created': pasty_file.created,
-                'filename': pasty_file.filename,
-                'content': pasty_file.content.name,
-                'link': pasty_file.content.url,
-            }
-            info['files'].append(file_info)
-
-        return info
-
-
-
-@paginated_model(orderings=['created'])
-class Star(models.Model):
-    id = models.CharField(max_length=250, primary_key=True)
-    created = models.DateTimeField(auto_now_add=True)
-    author = models.EmailField()
-    paste_id = models.BigIntegerField()
+class Star(ndb.Model):
+    created = ndb.DateTimeProperty(auto_now_add=True)
+    author = ndb.StringProperty(indexed=True)
+    paste = ndb.KeyProperty(Paste)
 
 
 def get_starred_pastes(email):
     """Returns pastes starred by a user, ordered by when the paste was starred."""
-    stars = Star.objects.filter(author=email).order_by('-created')
-    paste_ids = [star.paste_id for star in stars[:20]]
-    pastes = list(Paste.objects.filter(pk__in=paste_ids))
-    pastes.sort(key=lambda x: paste_ids.index(x.pk))
+    stars = Star.query().filter(Star.author==email).order(-Star.created).fetch(100)
+    keys = [star.paste for star in stars]
+    pastes = [key.get() for key in keys]
+    pastes.sort(key=lambda x: keys.index(x.key))
 
     return pastes

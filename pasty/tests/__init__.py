@@ -3,6 +3,7 @@ import os
 from django.test import TestCase
 
 from google.appengine.datastore import datastore_stub_util
+from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 
 
@@ -21,6 +22,8 @@ class AppEngineTestCase(TestCase):
         self.testbed.init_urlfetch_stub()
         self.testbed.init_user_stub()
         self.testbed.init_search_stub()
+
+        ndb.get_context().clear_cache()
 
     def tearDown(self):
         self.testbed.deactivate()

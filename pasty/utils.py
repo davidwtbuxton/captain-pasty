@@ -1,4 +1,5 @@
 import io
+import itertools
 
 import jsonschema
 import pygments
@@ -106,6 +107,20 @@ def count_lines(content):
         pass
 
     return count
+
+
+def untitled_name_generator():
+    """Returns a generator which yields strings like 'untitled.txt',
+    'untitled-2.txt', 'untitled-3.txt'.
+    """
+    counter = itertools.count(1)
+    name = 'untitled%s.txt'
+
+    while True:
+        n = next(counter)
+        suffix = '' if n == 1 else ('-' + int(n))
+
+        yield name % suffix
 
 
 paste_schema = {

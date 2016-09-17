@@ -3,5 +3,6 @@
 /.storage/
 /libs/
 /node_modules/
+/npm-debug.log
 /static/styles.css
 /static/app.min.js

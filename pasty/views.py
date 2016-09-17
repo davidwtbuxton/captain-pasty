@@ -5,8 +5,8 @@ import jsonschema
 import mistune
 from djangae.contrib.pagination import Paginator
 from django.core.paginator import InvalidPage
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse as render
 from django.utils import safestring
 from django.views.decorators.csrf import csrf_exempt
@@ -25,14 +25,7 @@ def home(request):
 def paste_list(request):
     """Shows recent pastes."""
     per_page = 20
-    pastes = Paste.objects.order_by('-created')
-    paginator = Paginator(pastes, per_page)
-    page_num = request.GET.get('p', 1)
-
-    try:
-        pastes = paginator.page(page_num)
-    except InvalidPage:
-        return redirect('paste_list')
+    pastes = Paste.query().order(-Paste.created).fetch(per_page)
 
     context = {
         'page_title': u'Pastes',
@@ -70,11 +63,11 @@ def paste_search(request):
 
 
 def paste_detail(request, paste_id):
-    paste = get_object_or_404(Paste, pk=paste_id)
-    try:
-        starred = Star.objects.get(author=request.user_email, paste_id=paste.pk)
-    except Star.DoesNotExist:
-        starred = None
+    paste = Paste.get_by_id(int(paste_id))
+    if not paste:
+        raise Http404
+
+    starred = Star.query(Star.author==request.user_email, Star.paste==paste.key).get()
 
     context = {
         'page_title': paste.filename,
@@ -87,14 +80,17 @@ def paste_detail(request, paste_id):
 
 def paste_download(request, paste_id):
     """Returns a zip with all the files."""
-    paste = get_object_or_404(Paste, pk=paste_id)
+    paste = Paste.get_by_id(paste_id)
+    if not paste:
+        raise Http404
+
     filename = paste.filename.encode('latin-1') + '.zip'
     header = 'attachment; filename="%s"' % filename
     response = HttpResponse(content_type='application/zip')
     response['Content-disposition'] = header
 
     with zipfile.ZipFile(response, mode='w', compression=zipfile.ZIP_DEFLATED) as archive:
-        for pasty_file in paste.files.all():
+        for pasty_file in paste.files:
             name = pasty_file.filename
             archive.writestr(name, pasty_file.content.read())
 
@@ -103,34 +99,36 @@ def paste_download(request, paste_id):
 
 def paste_create(request):
     fork_id = request.GET.get('fork')
-
-    try:
-        forked_from = Paste.objects.get(pk=fork_id)
-    except Paste.DoesNotExist:
-        forked_from = None
+    forked_from = Paste.get_by_id(int(fork_id)) if fork_id else None
 
     if request.method == 'POST':
         form = PasteForm(request.POST)
 
         if form.is_valid():
-            paste = form.save(commit=False)
-            paste.forked_from = forked_from
-            paste.author = request.user_email
-            paste.save()
+            paste = Paste(author=request.user_email, forked_from=forked_from)
+            paste.description = form.cleaned_data['description']
+            paste.put()
 
-            content = form.cleaned_data['content']
-            filename = form.cleaned_data['filename']
+            filename_list = request.POST.getlist('filename')
+            content_list = request.POST.getlist('content')
 
-            paste.save_content(content, filename)
+            for name, content in zip(filename_list, content_list):
+                paste.save_content(content, filename=name)
 
             # Update the search index.
             index.add_paste(paste)
 
-            return redirect('paste_list')
+            return redirect('paste_detail', paste.key.id())
     else:
         if forked_from:
-            initial = forked_from.__dict__
-            initial['content'] = forked_from.files.first().content.read()
+            with forked_from.files[0].open() as fh:
+                content = fh.read()
+
+            initial = {
+                'filename': forked_from.filename,
+                'description': forked_from.description,
+                'content': content,
+            }
         else:
             initial = {}
         form  = PasteForm(initial=initial)
@@ -139,7 +137,6 @@ def paste_create(request):
         'page_title': u'New paste',
         'form': form,
         'section': 'paste_create',
-
     }
 
     return render(request, 'paste_form.html', context)
@@ -198,27 +195,20 @@ def api_star(request):
         result = {u'error': u'Please sign in to star pastes'}
         return JsonResponse(result, status=403)
 
-    paste_id = request.POST.get('paste')
-    try:
-        paste = Paste.objects.get(pk=paste_id)
-    except Paste.DoesNotExist:
+    paste_id = int(request.POST.get('paste'))
+    paste = Paste.get_by_id(paste_id)
+    if not paste:
         return JsonResponse({'error': 'Does not exist'}, status=400)
 
     # We construct the star id ourselves so that if you star something
     # twice it doesn't create multiple stars for the same paste.
-    star_id = u'%s/%s' % (request.user_email, paste.pk)
-    starred, _ = Star.objects.get_or_create(
-        id=star_id,
-        defaults = {
-            'author': request.user_email,
-            'paste_id': paste_id,
-        }
-    )
+    star_id = u'%s/%s' % (request.user_email, paste.key.id())
+    starred = Star.get_or_insert(star_id, author=request.user_email, paste=paste.key)
 
     result = {
-        'id': starred.id,
+        'id': starred.key.id(),
         'author': starred.author,
-        'paste': starred.paste_id,
+        'paste': starred.paste.id(),
     }
 
     return JsonResponse(result)
@@ -253,9 +243,10 @@ def api_paste_list(request):
 
 
 def api_paste_detail(request, paste_id):
-    try:
-        paste = Paste.objects.get(pk=paste_id)
-    except Paste.DoesNotExist:
+    paste_id = int(paste_id)
+    paste = Paste.get_by_id(paste_id)
+
+    if not paste:
         result = {'error': 'Paste does not exist'}
         status = 404
     else:
@@ -288,11 +279,12 @@ def api_paste_create(request):
         return JsonResponse(result, status=400)
 
     first_file = data['files'][0]
-    paste = Paste.objects.create(
+    paste = Paste(
         author=request.user_email,
         description=data['description'],
         filename=first_file['filename'],
     )
+    paste.put()
     paste.save_content(first_file['content'], filename=first_file['filename'])
     result = paste.to_dict()
     status = 201

@@ -12,17 +12,19 @@
 		{% render_input form.description class='input' placeholder='Description…' %}
 	</div>
 
-	<div class="control">
-		{% render_label form.filename class='label' %}
-		{% render_input form.filename class='input paste-form__filename' placeholder='Filename including extension…' %}
+	<div class="control paste-form__file-group">
+		<div class="control">
+			{% render_label form.filename class='label' %}
+			{% render_input form.filename class='input paste-form__filename' placeholder='Filename including extension…' %}
+		</div>
+
+		<div class="control">
+			{% render_input form.content class='textarea paste-form__content' placeholder='Paste your content here…' %}
+		</div>
 	</div>
 
 	<div class="control">
-		{% render_input form.content class='textarea paste-form__content' placeholder='Paste your content here…' %}
-	</div>
-
-	<div class="control">
-		<button class="button is-medium">Add file</button>
+		<span class="button is-medium paste-form__add-file">Add file</span>
 		<button type="submit" class="button is-primary is-medium">Create paste</button>
 	</div>
 

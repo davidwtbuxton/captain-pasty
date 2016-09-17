@@ -32,8 +32,9 @@ class ApiStarTestCase(AppEngineTestCase):
 
     def test_star_a_paste_creates_star(self):
         url = reverse('api_star')
-        paste = Paste.objects.create(pk='1234')
-        data = {'paste': paste.pk}
+        paste = Paste(id=1234)
+        paste.put()
+        data = {'paste': paste.key.id()}
 
         self.login('alice@example.com')
         response = self.client.post(url, data)
@@ -45,7 +46,7 @@ class ApiStarTestCase(AppEngineTestCase):
             {
                 'author': 'alice@example.com',
                 'id': 'alice@example.com/1234',
-                'paste': '1234',
+                'paste': 1234,
             },
         )
 
@@ -53,8 +54,7 @@ class ApiStarTestCase(AppEngineTestCase):
         url = reverse('api_star')
         data = {'paste': '1234'}
 
-        with self.assertRaises(Paste.DoesNotExist):
-            Paste.objects.get(pk='1234')
+        self.assertIsNone(Paste.get_by_id(1234))
 
         self.login('alice@example.com')
         response = self.client.post(url, data)
@@ -79,8 +79,7 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
     def test_error_for_non_existent_paste(self):
         url = reverse('api_paste_detail', args=('1234',))
 
-        with self.assertRaises(Paste.DoesNotExist):
-            Paste.objects.get(pk='1234')
+        self.assertIsNone(Paste.get_by_id(1234))
 
         response = self.client.get(url)
 
@@ -95,10 +94,11 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
         xmas = datetime.datetime(2016, 12, 25, tzinfo=timezone.utc)
 
         with mock.patch('django.utils.timezone.now', return_value=xmas):
-            paste = Paste.objects.create()
+            paste = Paste(id=1234)
+            paste.put()
             paste.save_content('foo', 'example.txt')
 
-        url = reverse('api_paste_detail', args=(paste.pk,))
+        url = reverse('api_paste_detail', args=(paste.key.id(),))
 
         response = self.client.get(url)
 
@@ -159,7 +159,7 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
             response.json(),
             {'error': 'Invalid request'},
         )
-    
+
     def test_invalid_data_returns_error(self):
         url = reverse('api_paste_list')
         self.login('alice@example.com')
@@ -228,4 +228,4 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                     'Foo bar baz\n</pre></div>\n</td></tr></table>'),
             },
         )
-        
+

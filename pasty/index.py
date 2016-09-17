@@ -35,18 +35,18 @@ def create_document_for_paste(paste):
     # Then we need to get the paste's content.
     contents = []
 
-    for pasty_file in paste.files.all():
-        pasty_file.content.seek(0)
-        value = pasty_file.content.read()
-        contents.append(value)
+    for pasty_file in paste.files:
+        with pasty_file.open('r') as fh:
+            value = fh.read()
+            contents.append(value)
 
     fields.append(search.TextField(name='content', value='\n\n'.join(contents)))
 
     # The default rank is just when the doc was inserted. We use the created
     # date as rank, which will automatically sort results by paste created.
     rank = datetime_to_timestamp(paste.created)
-
-    doc = search.Document(doc_id=unicode(paste.pk), rank=rank, fields=fields)
+    doc_id = unicode(paste.key.id())
+    doc = search.Document(doc_id=doc_id, rank=rank, fields=fields)
 
     return doc
 
@@ -58,7 +58,7 @@ def search_pastes(query, cursor_string):
 
     results = paste_index.search(query)
     pks = [int(doc.doc_id) for doc in results]
-    pastes = Paste.objects.filter(pk__in=pks)
+    pastes = [Paste.get_by_id(pk) for pk in pks]
     pastes.has_next = bool(results.cursor)
 
     pastes.next_page_number = results.cursor.web_safe_string if pastes.has_next else None
@@ -116,6 +116,7 @@ def index_directory(path):
                     pass
                 else:
                     author = get_email()
-                    paste = Paste.objects.create(filename=f, author=author, description=filename)
+                    paste = Paste(filename=f, author=author, description=filename)
+                    paste.put()
                     paste.save_content(content, filename=f)
                     add_paste(paste)

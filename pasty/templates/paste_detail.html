@@ -5,14 +5,14 @@
 <h1 class="title">{{ paste.filename }}</h1>
 
 <div class="paste-actions">
-	<a class="button" href="{% url 'paste_create' %}?fork={{ paste.pk }}">
+	<a class="button" href="{% url 'paste_create' %}?fork={{ paste.key.id }}">
 		<span class="icon" aria-hidden="true">
 			<i class="fa fa-code-fork"></i>
 		</span>
 		<span>Fork this paste</span>
 	</a>
 
-	<a class="button" href="{% url 'paste_download' paste.pk %}">
+	<a class="button" href="{% url 'paste_download' paste.key.id %}">
 		<span class="icon" aria-hidden="true">
 			<i class="fa fa-download"></i>
 		</span>
@@ -20,14 +20,14 @@
 	</a>
 
 	{% if starred %}
-		<button type="button" class="button star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+		<button type="button" class="button star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
 			<span class="icon" aria-hidden="true">
 				<i class="fa fa-star"></i>
 			</span>
 			<span class="star__status">Star{% if starred %}red{% endif %}</span>
 		</button>
 	{% else %}
-		<button type="button" class="button star__action" data-paste-id="{{ paste.pk }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+		<button type="button" class="button star__action" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
 			<span class="icon" aria-hidden="true">
 				<i class="fa fa-star-o"></i>
 			</span>
@@ -42,9 +42,9 @@
 	{% include '_paste_meta.html' %}
 
 	<div class="paste__content">
-		{% for file in paste.files.all %}
+		{% for file in paste.files %}
 			<div class="paste__file">
-				<span class="paste__file-name">{{ file.filename }}</span>
+				<h2 id="{{ file.filename|slugify }}" class="paste__file-name">{{ file.filename }}</h2>
 				{{ file.content_highlight }}
 			</div>
 		{% endfor %}
