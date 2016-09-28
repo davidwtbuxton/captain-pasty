@@ -1,4 +1,4 @@
-Django==1.10
+Django==1.10.2
 
 # This fork fixes Django 1.10 support.
 https://github.com/davidwtbuxton/djangae/archive/use-argparse-for-runserver.zip
@@ -8,3 +8,4 @@ Pygments==2.1.3
 mistune==0.7.3
 jsonschema==2.5.1
 functools32==3.2.3.post2
+django-csp==3.1

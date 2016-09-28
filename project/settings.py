@@ -28,6 +28,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pasty.middleware.GoogleUserMiddleware',
+    'pasty.middleware.CSPHostnameMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -70,3 +72,10 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 5
 FILE_UPLOAD_HANDLERS = (
     'django.core.files.uploadhandler.MemoryFileUploadHandler',
 )
+
+# The '{host}' shortcut is handled by pasty.middleware.CSPHostnameMiddleware.
+CSP_DEFAULT_SRC = ["'none'"]
+CSP_STYLE_SRC = ['{host}/static/styles.css']
+CSP_SCRIPT_SRC = ['{host}/static/app.min.js', '{host}/static/src/']
+CSP_IMG_SRC = ['{host}/static/pic/', '{host}/favicon.ico']
+CSP_FONT_SRC = ['{host}/static/fonts/']

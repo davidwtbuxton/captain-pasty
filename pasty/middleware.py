@@ -15,3 +15,29 @@ class GoogleUserMiddleware(object):
         response = self.get_response(request)
 
         return response
+
+
+class CSPHostnameMiddleware(object):
+    """Rewrites CSP headers set by django-csp, substituting the hostname
+    from the request.
+
+    This lets you have a directive with a path without knowing the server name.
+
+        CSP_SCRIPT_SRC = ('{host}/static/app.js',)
+
+    N.B. This must come _before_ csp.middleware.CSPMiddleware so that it can
+    process the response.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        header = 'Content-Security-Policy'
+
+        if header in response:
+            host = request.get_host()
+            value = response[header]
+            response[header] = value.format(host=host)
+
+        return response

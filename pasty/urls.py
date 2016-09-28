@@ -12,7 +12,6 @@ urlpatterns = [
         url(r'^star/$', views.api_star, name='api_star'),
     ])),
 
-    url(r'^highlight-styles.css$', views.highlight_styles, name='highlight_styles'),
     url(r'^$', views.home, name='home'),
     url(r'^new/$', views.paste_create, name='paste_create'),
     url(r'^recent/$', views.paste_list, name='paste_list'),
