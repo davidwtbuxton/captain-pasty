@@ -1,4 +1,4 @@
-Django==1.10.2
+Django==1.10.1
 
 # This fork fixes Django 1.10 support.
 https://github.com/davidwtbuxton/djangae/archive/use-argparse-for-runserver.zip

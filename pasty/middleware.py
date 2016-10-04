@@ -33,11 +33,12 @@ class CSPHostnameMiddleware(object):
 
     def __call__(self, request):
         response = self.get_response(request)
-        header = 'Content-Security-Policy'
+        headers = ('Content-Security-Policy', 'Content-Security-Policy-Report-Only')
 
-        if header in response:
-            host = request.get_host()
-            value = response[header]
-            response[header] = value.format(host=host)
+        for header in headers:
+            if header in response:
+                host = request.get_host()
+                value = response[header]
+                response[header] = value.format(host=host)
 
         return response

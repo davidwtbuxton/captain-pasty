@@ -5,36 +5,45 @@
 <h1 class="title">{{ paste.filename }}</h1>
 
 <div class="paste-actions">
-	<a class="button" href="{% url 'paste_create' %}?fork={{ paste.key.id }}">
-		<span class="icon" aria-hidden="true">
+	<a class="button is-small" href="{% url 'paste_create' %}?fork={{ paste.key.id }}">
+		<span class="icon is-small" aria-hidden="true">
 			<i class="fa fa-code-fork"></i>
 		</span>
 		<span>Fork this paste</span>
 	</a>
 
-	<a class="button" href="{% url 'paste_download' paste.key.id %}">
-		<span class="icon" aria-hidden="true">
+	<a class="button is-small" href="{% url 'paste_download' paste.key.id %}">
+		<span class="icon is-small" aria-hidden="true">
 			<i class="fa fa-download"></i>
 		</span>
 		<span>Download zip</span>
 	</a>
 
 	{% if starred %}
-		<button type="button" class="button star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
-			<span class="icon" aria-hidden="true">
+		<button type="button" class="button is-small star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+			<span class="icon is-small" aria-hidden="true">
 				<i class="fa fa-star"></i>
 			</span>
 			<span class="star__status">Star{% if starred %}red{% endif %}</span>
 		</button>
 	{% else %}
-		<button type="button" class="button star__action" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
-			<span class="icon" aria-hidden="true">
+		<button type="button" class="button is-small star__action" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
+			<span class="icon is-small" aria-hidden="true">
 				<i class="fa fa-star-o"></i>
 			</span>
 			<span class="star__status">Star</span>
 		</button>
 	{% endif %}
 
+	<span class="select is-small">
+		<select class="highlight-style-switcher">
+			<optgroup label="Highlight style">
+			{% for name, value in highlight_styles %}
+				<option value="{{ value }}"{% if name == 'default' %} selected{% endif %}>{{ name }}</option>
+			{% endfor %}
+			</optgroup>
+		</select>
+	</span>
 </div>
 
 <div class="paste">
