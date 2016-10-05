@@ -75,6 +75,7 @@ FILE_UPLOAD_HANDLERS = (
 
 # The '{host}' shortcut is handled by pasty.middleware.CSPHostnameMiddleware.
 CSP_DEFAULT_SRC = ["'none'"]
+CSP_CONNECT_SRC = ['{host}/api/v1/']
 CSP_STYLE_SRC = ['{host}/static/styles.css']
 CSP_SCRIPT_SRC = ['{host}/static/app.min.js', '{host}/static/src/']
 CSP_IMG_SRC = ['{host}/static/pic/', '{host}/favicon.ico']

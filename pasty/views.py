@@ -80,7 +80,7 @@ def paste_detail(request, paste_id):
 
 def paste_download(request, paste_id):
     """Returns a zip with all the files."""
-    paste = Paste.get_by_id(paste_id)
+    paste = Paste.get_by_id(int(paste_id))
     if not paste:
         raise Http404
 
