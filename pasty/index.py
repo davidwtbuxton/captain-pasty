@@ -51,19 +51,31 @@ def create_document_for_paste(paste):
     return doc
 
 
+class SearchResults(list):
+    def __init__(self, results):
+        pks = [int(doc.doc_id) for doc in results]
+        pastes = [Paste.get_by_id(pk) for pk in pks]
+        self._results = results
+        self[:] = pastes
+
+    @property
+    def has_next(self):
+        return bool(self._results.cursor)
+
+    @property
+    def next_page_number(self):
+        return self._results.cursor.web_safe_string if self.has_next else None
+
+
 def search_pastes(query, cursor_string):
     cursor = search.Cursor(web_safe_string=cursor_string)
     options = search.QueryOptions(cursor=cursor, ids_only=True)
     query = search.Query(query_string=query, options=options)
 
     results = paste_index.search(query)
-    pks = [int(doc.doc_id) for doc in results]
-    pastes = [Paste.get_by_id(pk) for pk in pks]
-    pastes.has_next = bool(results.cursor)
+    search_results = SearchResults(results)
 
-    pastes.next_page_number = results.cursor.web_safe_string if pastes.has_next else None
-
-    return pastes
+    return search_results
 
 
 def build_query(qdict):
