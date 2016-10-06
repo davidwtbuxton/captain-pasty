@@ -92,7 +92,9 @@ def paste_download(request, paste_id):
     with zipfile.ZipFile(response, mode='w', compression=zipfile.ZIP_DEFLATED) as archive:
         for pasty_file in paste.files:
             name = pasty_file.filename
-            archive.writestr(name, pasty_file.content.read())
+
+            with pasty_file.open() as fh:
+                archive.writestr(name, fh.read())
 
     return response
 
