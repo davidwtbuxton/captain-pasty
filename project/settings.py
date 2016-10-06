@@ -80,3 +80,6 @@ CSP_STYLE_SRC = ['{host}/static/styles.css']
 CSP_SCRIPT_SRC = ['{host}/static/app.min.js', '{host}/static/src/']
 CSP_IMG_SRC = ['{host}/static/pic/', '{host}/favicon.ico']
 CSP_FONT_SRC = ['{host}/static/fonts/']
+
+# Results per page.
+PAGE_SIZE = 10

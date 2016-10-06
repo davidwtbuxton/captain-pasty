@@ -4,6 +4,7 @@ import zipfile
 import jsonschema
 import mistune
 from djangae.contrib.pagination import Paginator
+from django.conf import settings
 from django.core.paginator import InvalidPage
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -24,7 +25,7 @@ def home(request):
 
 def paste_list(request):
     """Shows recent pastes."""
-    per_page = 20
+    per_page = settings.PAGE_SIZE
     pastes = Paste.query().order(-Paste.created).fetch(per_page)
 
     context = {

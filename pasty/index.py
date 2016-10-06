@@ -1,6 +1,7 @@
 import calendar
 import os
 
+from django.conf import settings
 from google.appengine.api import search
 
 from .models import Paste
@@ -67,9 +68,12 @@ class SearchResults(list):
         return self._results.cursor.web_safe_string if self.has_next else None
 
 
-def search_pastes(query, cursor_string):
+def search_pastes(query, cursor_string, limit=None):
+    if limit is None:
+        limit = settings.PAGE_SIZE
+
     cursor = search.Cursor(web_safe_string=cursor_string)
-    options = search.QueryOptions(cursor=cursor, ids_only=True)
+    options = search.QueryOptions(cursor=cursor, ids_only=True, limit=limit)
     query = search.Query(query_string=query, options=options)
 
     results = paste_index.search(query)
