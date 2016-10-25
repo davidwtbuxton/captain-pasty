@@ -3,9 +3,6 @@ import zipfile
 
 import jsonschema
 import mistune
-from djangae.contrib.pagination import Paginator
-from django.conf import settings
-from django.core.paginator import InvalidPage
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse as render
@@ -24,39 +21,22 @@ def home(request):
 
 
 def paste_list(request):
-    """Shows recent pastes."""
-    per_page = settings.PAGE_SIZE
-    pastes = Paste.query().order(-Paste.created).fetch(per_page)
-
-    context = {
-        'page_title': u'Pastes',
-        'pastes': pastes,
-        'section': 'paste_list',
-    }
-
-    return render(request, 'paste_list.html', context)
-
-
-def paste_search(request):
     """Shows a synopsis of pastes.
 
     You can search for pastes by author and tag, or search the paste content.
 
     /?author=jeff@example.com - finds pastes by jeff@example.com
-    /?tag=python&tag=javascript - finds pasted tagged 'python' OR 'javascript'
     /?q=foo - finds pastes containing the word 'foo'
     """
-    query = request.GET.get('q')
     page = request.GET.get('p')
-
     terms = index.build_query(request.GET)
     query = u' '.join(term for term, label in terms).encode('utf-8')
-    pastes = index.search_pastes(query, page) if query else []
+    pastes = index.search_pastes(query, page)
 
     context = {
         'page_title': u'Pastes',
         'pastes': pastes,
-        'section': 'paste_search',
+        'section': 'paste_list',
         'tags': [label for term, label in terms],
     }
 
@@ -215,15 +195,10 @@ def api_paste_list(request):
     if request.method == 'POST':
         return api_paste_create(request)
 
-    per_page = 20
-    pastes = Paste.objects.order_by('-created')
-    paginator = Paginator(pastes, per_page)
-    page_num = request.GET.get('p', 1)
-
-    try:
-        pastes = paginator.page(page_num)
-    except InvalidPage:
-        return redirect('api_paste_list')
+    page = request.GET.get('p')
+    terms = index.build_query(request.GET)
+    query = u' '.join(term for term, label in terms).encode('utf-8')
+    pastes = index.search_pastes(query, page)
 
     if pastes.has_next():
         next_page = '%s?p=%s' % (request.path, pastes.next_page_number())

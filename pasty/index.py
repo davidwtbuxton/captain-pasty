@@ -59,13 +59,11 @@ class SearchResults(list):
         self._results = results
         self[:] = pastes
 
-    @property
     def has_next(self):
         return bool(self._results.cursor)
 
-    @property
     def next_page_number(self):
-        return self._results.cursor.web_safe_string if self.has_next else None
+        return self._results.cursor.web_safe_string if self.has_next() else None
 
 
 def search_pastes(query, cursor_string, limit=None):
@@ -83,22 +81,21 @@ def search_pastes(query, cursor_string, limit=None):
 
 
 def build_query(qdict):
-    """Returns a list of (term, label) pairs from search params.
-
-    Combine the term parts to search for all parameters.
-    """
+    """Returns a list of (term, label) pairs from search params."""
     terms = []
 
-    author = qdict.get('author')
-    if author:
-        term = u'author:"%s"' % author
-        label = u'by %s' % author
-        terms.append((term, label))
+    # Maps query parameters to a function which returns a pair of (term, label).
+    params = {
+        'author': lambda x: (u'author:"%s"' % x, u'by %s' % x),
+        'q': lambda x: (x, u'containing "%s"' % x),
+    }
 
-    q = qdict.get('q')
-    if q:
-        label = u'containing "%s"' % q
-        terms.append((q, label))
+    for name in params:
+        value = qdict.get(name)
+
+        if value:
+            term, label = params[name](value)
+            terms.append((term, label))
 
     return terms
 
