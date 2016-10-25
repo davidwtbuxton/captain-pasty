@@ -111,6 +111,7 @@ class Paste(ndb.Model):
 
         return self.put()
 
+
 class Star(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     author = ndb.StringProperty(indexed=True)

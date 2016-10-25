@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from . import index
+from . import tasks
 from . import utils
 from .forms import PasteForm
 from .models import Paste, Star
@@ -268,23 +269,9 @@ def api_tag_list(request):
     return JsonResponse({})
 
 
-def save_paste(paste):
-    if not paste.filename:
-        paste.filename = u''
-
-    if not paste.description:
-        paste.description = u''
-
-    paste.save()
-    index.add_paste(paste)
-
-
 def admin(request):
     """Re-saves all the pastes."""
-    from djangae.contrib.mappers.defer import defer_iteration
-
     if request.method == 'POST':
-        queryset = Paste.objects.all()
-        defer_iteration(queryset, save_paste)
+        tasks.resave_pastes()
 
     return render(request, 'admin.html')
