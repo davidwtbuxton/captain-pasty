@@ -85,6 +85,14 @@ def get_all_highlight_css():
 highlight_css = {name: (klass, style) for name, klass, style in get_all_highlight_css()}
 
 
+def highlight_styles():
+    """Returns the syntax highlighting CSS as an encoded string."""
+    content = u'\n\n'.join(css for _, css in highlight_css.values())
+    content = content.encode('utf-8')
+
+    return content
+
+
 def get_url_patterns(prefix=None):
     """Returns a list of url definitions, optionally filtered by patterns
     matching the prefix.

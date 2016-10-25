@@ -18,10 +18,13 @@ Run the development server:
     $ python manage.py runserver
 
 
-Configuration
--------------
+Management commands
+-------------------
 
-Captain Pasty will use the default Cloud Storage bucket, but you can override that by naming a different bucket in Django settings:
+You can generate the CSS for Pygment's syntax highlighting:
 
-    # Add this to your project's settings.py
-    CLOUD_STORAGE_BUCKET = 'my-custom-bucket-name'
+    $ ./manage.py dumpstyles
+
+Update the included highlight styles like this:
+
+    $ ./manage.py dumpstyles > static/src/_highlight-styles.scss

@@ -160,12 +160,6 @@ def about(request):
     return render(request, 'about.html', context)
 
 
-def highlight_styles(request):
-    content = u'\n\n'.join(css for _, css in utils.highlight_css.values())
-
-    return HttpResponse(content, content_type='text/css')
-
-
 def api_root(request):
     """Redirect to the most recent API index."""
     return redirect('api_index')
