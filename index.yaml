@@ -16,6 +16,19 @@ indexes:
   - name: created
     direction: desc
 
+- kind: _AE_Pipeline_Record
+  properties:
+  - name: class_path
+  - name: is_root_pipeline
+  - name: start_time
+    direction: desc
+
+- kind: _AE_Pipeline_Record
+  properties:
+  - name: is_root_pipeline
+  - name: start_time
+    direction: desc
+
 - kind: pasty_star
   properties:
   - name: author

@@ -4,8 +4,6 @@ from . import views
 
 
 urlpatterns = [
-    url(r'^_ah/', include('djangae.urls')),
-
     url(r'^api/$', views.api_root, name='api_root'),
     url(r'^api/v1/', include([
         url(r'^$', views.api_index, name='api_index'),
