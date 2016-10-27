@@ -28,4 +28,8 @@ $(document).ready(function() {
 	}
 
 	$('.paste-form__add-file').click(add_file_inputs);
+
+	$('.notification').on('click', '.delete', function() {
+		$(this).parent('.notification').remove();
+	});
 });

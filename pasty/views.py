@@ -3,6 +3,7 @@ import zipfile
 
 import jsonschema
 import mistune
+from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse as render
@@ -273,5 +274,6 @@ def admin(request):
     """Re-saves all the pastes."""
     if request.method == 'POST':
         tasks.resave_pastes()
+        messages.success(request, u'Re-saving pastes\u2026')
 
     return render(request, 'admin.html')

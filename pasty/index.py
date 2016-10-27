@@ -71,7 +71,8 @@ class SearchResults(list):
         self[:] = pastes
 
         # And schedule those search docs for deletion.
-        deferred.defer(delete_docs_from_index, bad_docs, _queue='delete-docs')
+        if bad_docs:
+            deferred.defer(delete_docs_from_index, bad_docs, _queue='delete-docs')
 
     def has_next(self):
         return bool(self._results.cursor)
