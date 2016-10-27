@@ -1,12 +1,15 @@
 import calendar
+import logging
 import os
 
 from django.conf import settings
 from google.appengine.api import search
+from google.appengine.ext import deferred
 
 from .models import Paste
 
 
+log = logging.getLogger(__name__)
 paste_index = search.Index(name='pastes')
 
 
@@ -54,10 +57,21 @@ def create_document_for_paste(paste):
 
 class SearchResults(list):
     def __init__(self, results):
-        pks = [int(doc.doc_id) for doc in results]
-        pastes = [Paste.get_by_id(pk) for pk in pks]
+        # Guard against search docs for pastes that have been deleted.
+        pastes, bad_docs = [], []
+
+        for doc in results:
+            paste = Paste.get_by_id(int(doc.doc_id))
+            if paste:
+                pastes.append(paste)
+            else:
+                bad_docs.append(doc.doc_id)
+
         self._results = results
         self[:] = pastes
+
+        # And schedule those search docs for deletion.
+        deferred.defer(delete_docs_from_index, bad_docs, _queue='delete-docs')
 
     def has_next(self):
         return bool(self._results.cursor)
@@ -98,6 +112,16 @@ def build_query(qdict):
             terms.append((term, label))
 
     return terms
+
+
+def delete_docs_from_index(doc_ids):
+    """Delete documents from the search index. doc_ids is a list of strings."""
+    log.info('delete_docs_from_index(%r)', doc_ids)
+
+    try:
+        paste_index.delete(doc_ids)
+    except (search.DeleteError, ValueError):
+        log.exception('Error deleting stale search results.')
 
 
 def index_directory(path):

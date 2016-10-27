@@ -2,3 +2,6 @@ queue:
 
 - name: resave-pastes
   rate: 50/s
+
+- name: delete-docs
+  rate: 50/s
