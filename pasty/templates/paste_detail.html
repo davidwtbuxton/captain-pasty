@@ -35,15 +35,6 @@
 		</button>
 	{% endif %}
 
-	<span class="select is-small">
-		<select class="highlight-style-switcher">
-			<optgroup label="Highlight style">
-			{% for name, value in highlight_styles %}
-				<option value="{{ value }}"{% if name == 'default' %} selected{% endif %}>{{ name }}</option>
-			{% endfor %}
-			</optgroup>
-		</select>
-	</span>
 </div>
 
 <div class="paste">
