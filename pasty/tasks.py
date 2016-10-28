@@ -1,15 +1,17 @@
 import mapreduce.base_handler
 import mapreduce.control
 import mapreduce.mapper_pipeline
+from google.appengine.ext import ndb
 
 from . import index
+from .models import Paste
 
 
 _mapreduce_base_path = '/_ah/mapreduce'
 _pipeline_base_path = _mapreduce_base_path + '/pipeline'
 
 
-class PastePipeline(mapreduce.mapper_pipeline.MapperPipeline):
+class Pipeline(mapreduce.mapper_pipeline.MapperPipeline):
     def run(self,
             job_name,
             handler_spec,
@@ -17,6 +19,9 @@ class PastePipeline(mapreduce.mapper_pipeline.MapperPipeline):
             output_writer_spec=None,
             params=None,
             shards=None):
+
+        # Copied from Djangae's mapper. All this is necessary so that we can
+        # point tasks at Djangae's mapreduce / pipeline handlers (base_path).
 
         mapreduce_id = mapreduce.control.start_map(
             job_name,
@@ -38,10 +43,10 @@ class PastePipeline(mapreduce.mapper_pipeline.MapperPipeline):
             (_mapreduce_base_path, mapreduce_id)))
 
 
-def resave_pastes():
-    pipe = PastePipeline(
+def resave_pastes_task():
+    pipe = Pipeline(
             'Re-save pastes.',
-            handler_spec='pasty.tasks.save_paste',
+            handler_spec='pasty.tasks.resave_paste',
             input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
             params={'entity_kind': 'pasty.models.Paste'},
             shards=1,
@@ -51,7 +56,7 @@ def resave_pastes():
     return pipe
 
 
-def save_paste(paste):
+def resave_paste(paste):
     dirty = False
 
     if not paste.filename:
@@ -66,3 +71,34 @@ def save_paste(paste):
         paste.put()
 
     index.add_paste(paste)
+
+
+def convert_peelings_task():
+    pipe = Pipeline(
+        'Convert peelings to pastes.',
+        handler_spec='pasty.tasks.convert_peeling',
+        input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
+        params={'entity_kind': 'pasty.models.Peeling'},
+        shards=1,
+    )
+    pipe.start(queue_name='convert-peelings', base_path=_pipeline_base_path)
+
+    return pipe
+
+
+def convert_peeling(peeling):
+    """Convert the previous peelings entities to pastes."""
+    data = peeling.to_dict()
+    paste_id = peeling.key.id()
+    forked_from = ndb.Key(Paste, data['fork_of']) if data['fork_of'] else None
+
+    obj = Paste(
+        id=paste_id,
+        author=data['author_email'],
+        created=data['created'],
+        filename='',
+        description=data['title'],
+        forked_from=forked_from,
+    )
+    obj.put()
+    obj.save_content(data['content'], filename='')

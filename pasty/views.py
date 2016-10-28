@@ -12,9 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from . import index
-from . import tasks
 from . import utils
-from .forms import PasteForm
+from .forms import AdminForm, PasteForm
 from .models import Paste, Star
 
 
@@ -270,10 +269,25 @@ def api_tag_list(request):
     return JsonResponse({})
 
 
+@utils.requires_admin
 def admin(request):
-    """Re-saves all the pastes."""
-    if request.method == 'POST':
-        tasks.resave_pastes()
-        messages.success(request, u'Re-saving pastes\u2026')
+    """For firing migration tasks."""
+    form = AdminForm()
 
-    return render(request, 'admin.html')
+    if request.method == 'POST':
+        form = AdminForm(request.POST)
+
+        if form.is_valid():
+            for label, task_func in form.cleaned_data['tasks']:
+                task_func()
+                msg = u'Started "%s" task\u2026' % label.lower()
+                messages.success(request, msg)
+
+                return redirect('admin')
+
+    context = {
+        'form': form,
+        'section': 'admin',
+        'page_title': u'Administration things',
+    }
+    return render(request, 'admin.html', context)

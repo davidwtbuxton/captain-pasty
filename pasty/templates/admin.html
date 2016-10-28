@@ -6,8 +6,12 @@
 
 <form method="post">
 	{% csrf_token %}
-	<p>Start a task to re-save all pastes and update the search index.</p>
-	<button class="button" type="submit">Re-save pastes</button>
+	{{ form.as_p }}
+	<button class="button" type="submit">Start tasks</button>
 </form>
+
+<p>
+	<a href="/_ah/mapreduce">Task status</a>
+</p>
 
 {% endblock content %}

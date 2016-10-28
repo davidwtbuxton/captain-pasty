@@ -118,6 +118,13 @@ class Star(ndb.Model):
     paste = ndb.KeyProperty(Paste)
 
 
+class Peeling(ndb.Model):
+    """Legacy model for converting old peelings to new pastes."""
+    @classmethod
+    def _get_kind(cls):
+        return 'pastes_paste'
+
+
 def get_starred_pastes(email):
     """Returns pastes starred by a user, ordered by when the paste was starred."""
     stars = Star.query().filter(Star.author==email).order(-Star.created).fetch(100)

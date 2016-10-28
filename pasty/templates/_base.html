@@ -21,6 +21,10 @@
 					<button class="button" type="submit">Submit</button>
 				</form>
 
+				{% if is_current_user_admin %}
+					<a class="nav-item" href="{% url 'admin' %}">Administration</a>
+				{% endif %}
+
 				{% if request.user_email %}
 					<a class="nav-item" href="{{ logout_url }}">Sign out</a>
 				{% else %}

@@ -5,3 +5,6 @@ queue:
 
 - name: delete-docs
   rate: 50/s
+
+- name: convert-peelings
+  rate: 50/s
