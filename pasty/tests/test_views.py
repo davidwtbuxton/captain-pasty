@@ -6,7 +6,8 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from . import AppEngineTestCase
-from ..models import Paste
+from pasty.models import Paste
+from pasty import utils
 
 
 class PasteListTestCase(AppEngineTestCase):
@@ -15,6 +16,19 @@ class PasteListTestCase(AppEngineTestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+
+
+class PasteRedirectTestCase(AppEngineTestCase):
+    def test_redirects_peelings_link(self):
+        paste_code = utils.base62.encode(123456789)
+        url = reverse('paste_redirect', args=[paste_code])
+
+        self.assertEqual(url, '/p/8M0kX/')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/123456789/')
 
 
 class ApiStarTestCase(AppEngineTestCase):

@@ -1,8 +1,8 @@
 import functools
 import io
 import itertools
+import string
 
-import jsonschema
 import pygments
 from django.core.exceptions import PermissionDenied
 from google.appengine.api import users
@@ -144,24 +144,45 @@ def untitled_name_generator():
         yield name % suffix
 
 
-paste_schema = {
-    '$schema': 'http://json-schema.org/schema#',
-    'type': 'object',
-    'properties': {
-        'description': {'type': 'string'},
-        'files': {
-            'type': 'array',
-            'minItems': 1,
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'filename': {'type': 'string'},
-                    'content': {'type': 'string'},
-                },
-                'required': ['filename', 'content'],
-            },
-        },
-    },
-    'required': ['description', 'files'],
-}
-paste_validator = jsonschema.Draft4Validator(paste_schema)
+class BaseConverter(object):
+    def __init__(self, digits):
+        self.digits = digits
+        self.base = len(digits)
+
+    def encode(self, value):
+        base, digits = self.base, self.digits
+
+        if value < 0:
+            sign = '-'
+            value = abs(value)
+        else:
+            sign = ''
+
+        value, rem = divmod(value, base)
+        chars = [digits[rem]]
+
+        while value:
+            value, rem = divmod(value, base)
+            chars.append(digits[rem])
+
+        return sign + ''.join(reversed(chars))
+
+    def decode(self, value):
+        base, digits = self.base, self.digits
+
+        if value.startswith('-'):
+            sign = -1
+            value = value[1:]
+        else:
+            sign = 1
+
+        result = 0
+
+        for power, char in enumerate(reversed(value)):
+            pos = digits.index(char)
+            result += (base ** power) * pos
+
+        return result * sign
+
+
+base62 = BaseConverter(string.digits + string.ascii_uppercase + string.ascii_lowercase)

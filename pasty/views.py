@@ -13,6 +13,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import index
 from . import utils
+from . import validators
 from .forms import AdminForm, PasteForm
 from .models import Paste, Star
 
@@ -42,6 +43,14 @@ def paste_list(request):
     }
 
     return render(request, 'paste_list.html', context)
+
+
+def paste_redirect(request, paste_code):
+    """Redirect from old peelings links."""
+    paste_id = utils.base62.decode(paste_code)
+    url = redirect('paste_detail', paste_id)
+
+    return url
 
 
 def paste_detail(request, paste_id):
@@ -245,7 +254,7 @@ def api_paste_create(request):
         return JsonResponse(result, status=400)
 
     try:
-        utils.paste_validator.validate(data)
+        validators.paste_validator.validate(data)
     except jsonschema.ValidationError as err:
         result = {'error': err.message}
 
