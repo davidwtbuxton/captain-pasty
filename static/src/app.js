@@ -41,19 +41,19 @@ $(document).ready(function() {
 		return true;
 	}
 
-	$('.paste-form__file-group').on('dragenter dragover', function() {
+	$(document).on('dragenter dragover', '.paste-form__file-group', function() {
 		$('input, textarea', this).addClass('drag-start');
 
 		return false;
 	});
 
-	$('.paste-form__file-group').on('dragleave dragend dragexit drop', function() {
+	$(document).on('dragleave dragend dragexit drop', '.paste-form__file-group', function() {
 		$('input, textarea', this).removeClass('drag-start');
 
 		return false;
 	});
 
-	$('.paste-form__file-group').on('drop', function(evt) {
+	$(document).on('drop', '.paste-form__file-group', function(evt) {
 		var files = evt.originalEvent.dataTransfer.files,
 			dropTarget = this;
 

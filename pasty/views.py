@@ -35,12 +35,14 @@ def paste_list(request):
     terms = index.build_query(request.GET)
     query = u' '.join(term for term, label in terms).encode('utf-8')
     pastes = index.search_pastes(query, page)
+    tags = [label for term, label in terms]
+    page_title = u'Pastes ' + u', '.join(tags)
 
     context = {
-        'page_title': u'Pastes',
+        'page_title': page_title,
         'pastes': pastes,
         'section': 'paste_list',
-        'tags': [label for term, label in terms],
+        'tags': tags,
     }
 
     return render(request, 'paste_list.html', context)

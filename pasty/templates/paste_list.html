@@ -3,15 +3,17 @@
 {% block content %}
 
 <div class="col-sm-8">
-	<h1>Pastes</h1>
+	<h1>
+		Pastes
 
-	{% if tags %}
-		<div class="search-tags">
-		{% for tag in tags %}
-			<span class="tag is-info">{{ tag }}</span>
-		{% endfor %}
-		</div>
-	{% endif %}
+		{% if tags %}
+			<span class="search-tags">
+			{% for tag in tags %}
+				<span class="tag is-info is-medium">{{ tag }}</span>
+			{% endfor %}
+			</span>
+		{% endif %}
+	</h1>
 
 {% for paste in pastes %}
 	<div class="paste-summary">
