@@ -16,7 +16,7 @@
 				</a>
 				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New paste</a>
 				<a class="nav-item{% if section == 'paste_list' %} is-active{% endif %}" href="{% url 'paste_list' %}">Pastes</a>
-				<form class="nav-item" action="{% url 'paste_search' %}">
+				<form class="nav-item control has-addons" action="{% url 'paste_search' %}">
 					<input class="input" type="text" name="q" placeholder="Search">
 					<button class="button" type="submit">Submit</button>
 				</form>

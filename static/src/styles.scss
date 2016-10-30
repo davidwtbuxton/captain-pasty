@@ -26,6 +26,12 @@ $body-background: #fff;
 	z-index: 2;
 }
 
+.nav {
+	.control {
+		margin-bottom: 0;
+	}
+}
+
 .pasty-main {
 	padding-bottom: 10px;
 	padding-top: 80px;

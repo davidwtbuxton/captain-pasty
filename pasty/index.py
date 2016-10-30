@@ -27,7 +27,6 @@ def create_document_for_paste(paste):
     config = [
         ('author', search.TextField),
         ('description', search.TextField),
-        ('filename', search.TextField),
     ]
 
     fields = [f(name=n, value=getattr(paste, n)) for n, f in config]
@@ -37,14 +36,15 @@ def create_document_for_paste(paste):
     fields.append(search.DateField(name='created', value=created))
 
     # Then we need to get the paste's content.
-    contents = []
-
     for pasty_file in paste.files:
+        name_field = search.TextField(name='filename', value=pasty_file.filename)
+        type_field = search.TextField(name='content_type', value=pasty_file.content_type)
+
         with pasty_file.open('r') as fh:
             value = fh.read()
-            contents.append(value)
+            content_field = search.TextField(name='content', value=fh.read())
 
-    fields.append(search.TextField(name='content', value='\n\n'.join(contents)))
+        fields.extend([name_field, type_field, content_field])
 
     # The default rank is just when the doc was inserted. We use the created
     # date as rank, which will automatically sort results by paste created.
@@ -69,6 +69,7 @@ class SearchResults(list):
 
         self._results = results
         self[:] = pastes
+        self.count = results.number_found
 
         # And schedule those search docs for deletion.
         if bad_docs:
@@ -102,6 +103,8 @@ def build_query(qdict):
     # Maps query parameters to a function which returns a pair of (term, label).
     params = {
         'author': lambda x: (u'author:"%s"' % x, u'by %s' % x),
+        'content_type': lambda x: (u'content_type:"%s"' % x, u'content type like "%s"' % x),
+        'filename': lambda x: (u'filename:"%s"' % x, u'filename like "%s"' % x),
         'q': lambda x: (x, u'containing "%s"' % x),
     }
 
