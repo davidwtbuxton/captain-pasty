@@ -1,5 +1,8 @@
+import mimetypes
+
 import cloudstorage
 from django.core.urlresolvers import reverse
+from django.http import Http404
 from django.utils import safestring
 from django.utils import timezone
 from google.appengine.api import app_identity
@@ -25,6 +28,8 @@ def make_name_for_storage(paste, filename):
 
 
 class PastyFile(ndb.Model):
+    DEFAULT_CONTENT_TYPE = 'text/plain'
+
     created = ndb.DateTimeProperty(auto_now_add=True)
     filename = ndb.StringProperty()
     path = ndb.StringProperty()
@@ -39,11 +44,10 @@ class PastyFile(ndb.Model):
 
         return safestring.mark_safe(markup)
 
-    @classmethod
-    def bucket_path(cls, path):
+    def bucket_path(self):
         bucket = app_identity.get_default_gcs_bucket_name()
 
-        return '/%s/%s' % (bucket, path)
+        return '/%s/%s' % (bucket, self.path)
 
     @classmethod
     def from_content(self, paste, filename, content):
@@ -61,8 +65,15 @@ class PastyFile(ndb.Model):
 
         return obj
 
+    @ndb.ComputedProperty
+    def content_type(self):
+        filename = self.filename or ''
+        content_type, _ = mimetypes.guess_type(filename)
+
+        return content_type or self.DEFAULT_CONTENT_TYPE
+
     def open(self, mode='r'):
-        path = self.bucket_path(self.path)
+        path = self.bucket_path()
 
         return cloudstorage.open(path, mode)
 
@@ -79,6 +90,21 @@ class Paste(ndb.Model):
 
     def __unicode__(self):
         return u'%s / %s' % (self.author, self.filename)
+
+    @classmethod
+    def get_or_404(cls, paste_id):
+        """Returns a paste object. Raises Http404 if the paste_id is invalid."""
+        try:
+            paste_id = int(paste_id)
+        except (ValueError, TypeError):
+            raise Http404
+
+        paste = cls.get_by_id(paste_id)
+
+        if not paste:
+            raise Http404
+
+        return paste
 
     @ndb.ComputedProperty
     def num_files(self):

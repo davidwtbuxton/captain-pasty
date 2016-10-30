@@ -10,6 +10,7 @@ from django.template.response import TemplateResponse as render
 from django.utils import safestring
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from google.appengine.ext import blobstore
 
 from . import index
 from . import utils
@@ -54,9 +55,7 @@ def paste_redirect(request, paste_code):
 
 
 def paste_detail(request, paste_id):
-    paste = Paste.get_by_id(int(paste_id))
-    if not paste:
-        raise Http404
+    paste = Paste.get_or_404(paste_id)
 
     starred = Star.query(Star.author==request.user_email, Star.paste==paste.key).get()
 
@@ -71,9 +70,7 @@ def paste_detail(request, paste_id):
 
 def paste_download(request, paste_id):
     """Returns a zip with all the files."""
-    paste = Paste.get_by_id(int(paste_id))
-    if not paste:
-        raise Http404
+    paste = Paste.get_or_404(paste_id)
 
     filename = paste.filename.encode('latin-1') + '.zip'
     header = 'attachment; filename="%s"' % filename
@@ -86,6 +83,23 @@ def paste_download(request, paste_id):
 
             with pasty_file.open() as fh:
                 archive.writestr(name, fh.read())
+
+    return response
+
+
+def paste_raw(request, paste_id, filename):
+    """Serve a file in Google Cloud Storage using the blobstore API."""
+    paste = Paste.get_or_404(paste_id)
+
+    for pasty_file in paste.files:
+        if pasty_file.filename == filename:
+            break
+    else:
+        raise Http404
+
+    blob_key = blobstore.create_gs_key('/gs' + pasty_file.bucket_path())
+    response = HttpResponse(content_type=pasty_file.content_type)
+    response[blobstore.BLOB_KEY_HEADER] = str(blob_key)
 
     return response
 
@@ -182,9 +196,9 @@ def api_star(request):
         result = {u'error': u'Please sign in to star pastes'}
         return JsonResponse(result, status=403)
 
-    paste_id = int(request.POST.get('paste'))
-    paste = Paste.get_by_id(paste_id)
-    if not paste:
+    try:
+        paste = Paste.get_or_404(request.POST.get('paste'))
+    except Http404:
         return JsonResponse({'error': 'Does not exist'}, status=400)
 
     # We construct the star id ourselves so that if you star something
@@ -225,10 +239,9 @@ def api_paste_list(request):
 
 
 def api_paste_detail(request, paste_id):
-    paste_id = int(paste_id)
-    paste = Paste.get_by_id(paste_id)
-
-    if not paste:
+    try:
+        paste = Paste.get_or_404(paste_id)
+    except Http404:
         result = {'error': 'Paste does not exist'}
         status = 404
     else:

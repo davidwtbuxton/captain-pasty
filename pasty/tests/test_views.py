@@ -31,6 +31,29 @@ class PasteRedirectTestCase(AppEngineTestCase):
         self.assertEqual(response['Location'], '/123456789/')
 
 
+class PasteRawTestCase(AppEngineTestCase):
+    def test_serves_raw_file(self):
+        paste = Paste()
+        paste.put()
+        paste.save_content('example', filename='image.jpg')
+
+        url = reverse('paste_raw', args=[paste.key.id(), 'image.jpg'])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-type'], 'image/jpeg')
+
+    def test_returns_404_for_bogus_filename(self):
+        paste = Paste()
+        paste.put()
+        paste.save_content('example', filename='image.jpg')
+
+        url = reverse('paste_raw', args=[paste.key.id(), 'bogus.jpg'])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 404)
+
+
 class ApiStarTestCase(AppEngineTestCase):
     def test_star_a_paste_requires_user_login(self):
         url = reverse('api_star')

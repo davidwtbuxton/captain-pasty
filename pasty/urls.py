@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^p/([a-zA-Z0-9]+)/$', views.paste_redirect, name='paste_redirect'),
     url(r'^([a-zA-Z0-9]+)/$', views.paste_detail, name='paste_detail'),
     url(r'^([a-zA-Z0-9]+).zip$', views.paste_download, name='paste_download'),
+    url(r'^([a-zA-Z0-9]+)/([^/]+)$', views.paste_raw, name='paste_raw'),
 ]
