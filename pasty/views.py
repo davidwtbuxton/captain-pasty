@@ -8,15 +8,15 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse as render
 from django.utils import safestring
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from google.appengine.ext import blobstore
+from google.appengine.ext import ndb
 
 from . import index
 from . import utils
 from . import validators
 from .forms import AdminForm, PasteForm
-from .models import Paste, Star
+from .models import Paste, Star, get_starred_pastes
 
 
 def home(request):
@@ -45,7 +45,7 @@ def paste_list(request):
         'tags': tags,
     }
 
-    return render(request, 'paste_list.html', context)
+    return render(request, 'pasty/paste_list.html', context)
 
 
 def paste_redirect(request, paste_code):
@@ -67,7 +67,7 @@ def paste_detail(request, paste_id):
         'starred': starred,
     }
 
-    return render(request, 'paste_detail.html', context)
+    return render(request, 'pasty/paste_detail.html', context)
 
 
 def paste_download(request, paste_id):
@@ -148,7 +148,7 @@ def paste_create(request):
         'section': 'paste_create',
     }
 
-    return render(request, 'paste_form.html', context)
+    return render(request, 'pasty/paste_form.html', context)
 
 
 def about(request):
@@ -163,7 +163,7 @@ def about(request):
         'changelog': changelog,
     }
 
-    return render(request, 'about.html', context)
+    return render(request, 'pasty/about.html', context)
 
 
 def api_root(request):
@@ -189,9 +189,8 @@ def api_index(request):
     return JsonResponse(result)
 
 
-@csrf_exempt
 @require_http_methods(['POST'])
-def api_star(request):
+def api_star_create(request):
     """Adds the paste to the user's starred pastes (for POSTs)."""
     # N.B. we can ignore csrf because we check the user is signed-in.
     if not request.user_email:
@@ -212,6 +211,30 @@ def api_star(request):
         'id': starred.key.id(),
         'author': starred.author,
         'paste': starred.paste.id(),
+        'stars': [p.to_dict() for p in get_starred_pastes(request.user_email)],
+    }
+
+    return JsonResponse(result)
+
+
+@require_http_methods(['POST'])
+def api_star_delete(request):
+    if not request.user_email:
+        result = {u'error': u'Please sign in to star pastes'}
+        return JsonResponse(result, status=403)
+
+    try:
+        paste = Paste.get_or_404(request.POST.get('paste'))
+    except Http404:
+        return JsonResponse({'error': 'Does not exist'}, status=400)
+
+    star_id = u'%s/%s' % (request.user_email, paste.key.id())
+    star_key = ndb.Key(Star, star_id)
+    star_key.delete()
+
+    result = {
+        'id': star_key.id(),
+        'stars': [p.to_dict() for p in get_starred_pastes(request.user_email)],
     }
 
     return JsonResponse(result)
@@ -253,7 +276,6 @@ def api_paste_detail(request, paste_id):
     return JsonResponse(result, status=status)
 
 
-@csrf_exempt
 @require_http_methods(['POST'])
 def api_paste_create(request):
     if not request.user_email:
@@ -289,11 +311,7 @@ def api_paste_create(request):
     return JsonResponse(result, status=status)
 
 
-def api_tag_list(request):
-    return JsonResponse({})
-
-
-@utils.requires_admin
+@utils.admin_required
 def admin(request):
     """For firing migration tasks."""
     form = AdminForm()
@@ -314,4 +332,4 @@ def admin(request):
         'section': 'admin',
         'page_title': u'Administration things',
     }
-    return render(request, 'admin.html', context)
+    return render(request, 'pasty/admin.html', context)

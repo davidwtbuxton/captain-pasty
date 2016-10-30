@@ -1,10 +1,10 @@
-{% extends '_base.html' %}
+{% extends 'pasty/_base.html' %}
 
 {% block content %}
 
 <h1 class="title">New paste</h1>
 
-<form method="post">
+<form method="post" class="paste-form">
 	{% csrf_token %}
 
 	<div class="control">

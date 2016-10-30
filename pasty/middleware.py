@@ -34,7 +34,8 @@ class CSPHostnameMiddleware(object):
     def __call__(self, request):
         response = self.get_response(request)
         headers = ('Content-Security-Policy', 'Content-Security-Policy-Report-Only')
-        host = request.get_host()
+        scheme = 'https://' if request.is_secure() else 'http://'
+        host = scheme + request.get_host()
 
         for header in headers:
             if header in response:

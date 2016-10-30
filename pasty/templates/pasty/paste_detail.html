@@ -1,4 +1,4 @@
-{% extends '_base.html' %}
+{% extends 'pasty/_base.html' %}
 
 {% block content %}
 
@@ -19,27 +19,18 @@
 		<span>Download zip</span>
 	</a>
 
-	{% if starred %}
-		<button type="button" class="button is-small star__action{% if starred %} is-disabled{% endif %}" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
-			<span class="icon is-small" aria-hidden="true">
-				<i class="fa fa-star"></i>
-			</span>
-			<span class="star__status">Star{% if starred %}red{% endif %}</span>
-		</button>
-	{% else %}
-		<button type="button" class="button is-small star__action" data-paste-id="{{ paste.key.id }}" data-url="{% url 'api_star' %}" data-csrf-token="{{ csrf_token }}">
-			<span class="icon is-small" aria-hidden="true">
-				<i class="fa fa-star-o"></i>
-			</span>
-			<span class="star__status">Star</span>
-		</button>
-	{% endif %}
+	<button type="button" class="button is-small star__action" data-paste-id="{{ paste.key.id }}" data-url-create="{% url 'api_star_create' %}" data-url-delete="{% url 'api_star_delete' %}" data-csrf-token="{{ csrf_token }}">
+		<span class="icon is-small" aria-hidden="true">
+			<i class="fa fa-star{% if not starred %}-o{% endif %}"></i>
+		</span>
+		<span class="star__status">Star{% if starred %}red{% endif %}</span>
+	</button>
 
 </div>
 
 <div class="paste">
 
-	{% include '_paste_meta.html' %}
+	{% include 'pasty/_paste_meta.html' %}
 
 	<div class="paste__content">
 		{% for file in paste.files %}

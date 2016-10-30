@@ -21,7 +21,7 @@ def get_current_user_email():
     return user.email() if user else u''
 
 
-def requires_admin(view_func):
+def admin_required(view_func):
     @functools.wraps(view_func)
     def _func(request, *args, **kwargs):
         if users.is_current_user_admin():

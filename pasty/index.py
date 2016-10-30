@@ -42,7 +42,7 @@ def create_document_for_paste(paste):
 
         with pasty_file.open('r') as fh:
             value = fh.read()
-            content_field = search.TextField(name='content', value=fh.read())
+            content_field = search.TextField(name='content', value=value)
 
         fields.extend([name_field, type_field, content_field])
 

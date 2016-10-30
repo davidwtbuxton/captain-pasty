@@ -9,7 +9,8 @@ urlpatterns = [
         url(r'^$', views.api_index, name='api_index'),
         url(r'^pastes/$', views.api_paste_list, name='api_paste_list'),
         url(r'^pastes/([a-zA-Z0-9]+)/$', views.api_paste_detail, name='api_paste_detail'),
-        url(r'^star/$', views.api_star, name='api_star'),
+        url(r'^star/$', views.api_star_create, name='api_star_create'),
+        url(r'^star/delete/$', views.api_star_delete, name='api_star_delete'),
     ])),
 
     url(r'^$', views.home, name='home'),

@@ -2,17 +2,30 @@ $(document).ready(function() {
 	'use strict';
 
 	function starPaste() {
-		var paste_id = this.dataset.pasteId,
-			url = this.dataset.url,
-			data = {'paste': paste_id};
+		var pasteId = this.dataset.pasteId,
+			urlCreate = this.dataset.urlCreate,
+			urlDelete = this.dataset.urlDelete,
+			data = {'paste': pasteId},
+			url,
+			isStarred;
 
-		$.post(url, data, starSuccess);
-	}
+		isStarred = $('.star__status', this).html() === 'Starred';
+		url = isStarred ? urlDelete: urlCreate;
 
-	function starSuccess() {
-		$('.star__action').addClass('is-disabled');
-		$('.star__action .star__status').html('Starred');
-		$('.star__action .fa').addClass('fa-star').removeClass('fa-star-o');
+		$.post({
+			url: url,
+			data: data,
+			headers: {'X-CSRFToken': this.dataset.csrfToken},
+			success: function() {
+				if (isStarred) {
+					$('.star__action .star__status').html('Star');
+					$('.star__action .fa').addClass('fa-star-o').removeClass('fa-star');
+				} else {
+					$('.star__action .star__status').html('Starred');
+					$('.star__action .fa').addClass('fa-star').removeClass('fa-star-o');
+				}
+			}
+		});
 	}
 
 	$('.star__action').click(starPaste);
@@ -36,35 +49,29 @@ $(document).ready(function() {
 	});
 
 
-	function fileUploadSupported() {
-		/* True if we want to support drag-n-drop file uploads. */
-		return true;
-	}
+	$('.paste-form')
+		.on('dragenter dragover', '.paste-form__file-group', function() {
+			$('input, textarea', this).addClass('drag-start');
 
-	$(document).on('dragenter dragover', '.paste-form__file-group', function() {
-		$('input, textarea', this).addClass('drag-start');
+			return false;
+		})
+		.on('dragleave dragend dragexit drop', '.paste-form__file-group', function() {
+			$('input, textarea', this).removeClass('drag-start');
 
-		return false;
-	});
+			return false;
+		})
+		.on('drop', '.paste-form__file-group', function(evt) {
+			var files = evt.originalEvent.dataTransfer.files,
+				dropTarget = this;
 
-	$(document).on('dragleave dragend dragexit drop', '.paste-form__file-group', function() {
-		$('input, textarea', this).removeClass('drag-start');
+			$.each(files, function(idx, obj) {
+				$('.paste-form__filename', dropTarget).val(obj.name);
 
-		return false;
-	});
-
-	$(document).on('drop', '.paste-form__file-group', function(evt) {
-		var files = evt.originalEvent.dataTransfer.files,
-			dropTarget = this;
-
-		$.each(files, function(idx, obj) {
-			$('.paste-form__filename', dropTarget).val(obj.name);
-
-			var reader = new FileReader();
-			reader.onload = function(e) {
-				$('.paste-form__content', dropTarget).val(e.target.result);
-			};
-			reader.readAsText(obj);
+				var reader = new FileReader();
+				reader.onload = function(e) {
+					$('.paste-form__content', dropTarget).val(e.target.result);
+				};
+				reader.readAsText(obj);
+			});
 		});
-	});
 });
