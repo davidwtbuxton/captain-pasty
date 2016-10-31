@@ -16,9 +16,29 @@
 				</a>
 				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New paste</a>
 				<a class="nav-item{% if section == 'paste_list' %} is-active{% endif %}" href="{% url 'paste_list' %}">Pastes</a>
-				<form class="nav-item control has-addons" action="{% url 'paste_search' %}">
-					<input class="input" type="text" name="q" placeholder="Search">
-					<button class="button" type="submit">Submit</button>
+				<form class="nav-item search" action="{% url 'paste_search' %}">
+					<div class="control has-addons">
+						{% render_input search_form.q class="input" placeholder="Search" %}
+
+						<button class="button" type="submit">Submit</button>
+					</div>
+
+					<div class="advanced-search hidden">
+						{% render_label search_form.filename class="label is-small" %}
+						<div class="control">
+							{% render_input search_form.filename class="input" placeholder="File name" %}
+						</div>
+
+						{% render_label search_form.author class="label" %}
+						<div class="control">
+							{% render_input search_form.author class="input" placeholder="Email (author)" %}
+						</div>
+
+						{% render_label search_form.content_type class="label" %}
+						<div class="control">
+							{% render_input search_form.content_type class="input" placeholder="Content-type" %}
+						</div>
+					</div>
 				</form>
 
 				{% if is_current_user_admin %}

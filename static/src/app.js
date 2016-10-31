@@ -1,6 +1,8 @@
 $(document).ready(function() {
 	'use strict';
 
+
+	/* Starring and un-starring pastes. */
 	function starPaste() {
 		var pasteId = this.dataset.pasteId,
 			urlCreate = this.dataset.urlCreate,
@@ -30,6 +32,8 @@ $(document).ready(function() {
 
 	$('.star__action').click(starPaste);
 
+
+	/* The "add file" button on the new paste form. */
 	function addFileInputs() {
 		/* Copy the filename and textarea inputs for a new file. */
 		var $old_group = $('.paste-form__file-group').last(),
@@ -44,11 +48,14 @@ $(document).ready(function() {
 
 	$('.paste-form__add-file').click(addFileInputs);
 
+
+	/* Dismiss notifications (admins). */
 	$('.notification').on('click', '.delete', function() {
 		$(this).parent('.notification').remove();
 	});
 
 
+	/* Drag-and-drop files into the new paste form. */
 	$('.paste-form')
 		.on('dragenter dragover', '.paste-form__file-group', function() {
 			$('input, textarea', this).addClass('drag-start');
@@ -74,4 +81,22 @@ $(document).ready(function() {
 				reader.readAsText(obj);
 			});
 		});
+
+
+	/* Show / hide the advanced search form. */
+	function hideAdvancedSearch(evt) {
+		if (! $(evt.target).parents('.search').length) {
+			$('.advanced-search').addClass('hidden');
+			$(document).off('click', hideAdvancedSearch);
+		}
+	}
+
+	function showAdvancedSearch() {
+		$('.advanced-search').removeClass('hidden');
+		// Make sure we don't bind it more than once.
+		$(document).off('click', hideAdvancedSearch);
+		$(document).on('click', hideAdvancedSearch);
+	}
+
+	$('.search').on('focus', 'input', showAdvancedSearch);
 });

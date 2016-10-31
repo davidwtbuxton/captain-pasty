@@ -30,6 +30,42 @@ $body-background: #fff;
 	.control {
 		margin-bottom: 0;
 	}
+
+	// Unset overflow rules for the advanced-search.
+	.nav-left {
+		overflow: visible;
+	}
+}
+
+.search {
+	position: relative;
+
+	.advanced-search {
+		background-color: white;
+		border-radius: 4px;
+		box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+		left: 0;
+		padding: 10px;
+		position: absolute;
+		text-align: left;
+		top: 60px;
+		// width: 100%;
+		z-index: 5;
+
+		label {
+			// font-weight: normal;
+			font-size: 12px;
+			margin-top: 10px;
+
+			&:first-of-type {
+				margin-top: 0;
+			}
+		}
+
+		&.hidden {
+			display: none;
+		}
+	}
 }
 
 .pasty-main {

@@ -16,6 +16,13 @@ class PasteForm(NoLabelSuffix, forms.Form):
     content = forms.CharField(widget=forms.Textarea)
 
 
+class SearchForm(NoLabelSuffix, forms.Form):
+    q = forms.CharField(required=False)
+    author = forms.CharField(required=False)
+    filename = forms.CharField(required=False)
+    content_type = forms.CharField(required=False)
+
+
 class AdminForm(NoLabelSuffix, forms.Form):
     _tasks = [
         # (form value, form label, task func)

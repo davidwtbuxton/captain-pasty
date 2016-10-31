@@ -1,7 +1,8 @@
 from google.appengine.api import users
 
-from . import utils
+from . import forms
 from . import models
+from . import utils
 
 
 def pasty(request):
@@ -14,4 +15,5 @@ def pasty(request):
         'logout_url': users.create_logout_url(path),
         'highlight_styles': style_options,
         'is_current_user_admin': users.is_current_user_admin(),
+        'search_form': forms.SearchForm(),
     }
