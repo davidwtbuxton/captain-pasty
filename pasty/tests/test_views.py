@@ -56,7 +56,7 @@ class PasteRawTestCase(AppEngineTestCase):
 
 class ApiStarTestCase(AppEngineTestCase):
     def test_star_a_paste_requires_user_login(self):
-        url = reverse('api_star')
+        url = reverse('api_star_create')
 
         response = self.client.post(url, {})
 
@@ -68,7 +68,7 @@ class ApiStarTestCase(AppEngineTestCase):
         )
 
     def test_star_a_paste_creates_star(self):
-        url = reverse('api_star')
+        url = reverse('api_star_create')
         paste = Paste(id=1234)
         paste.put()
         data = {'paste': paste.key.id()}
@@ -79,16 +79,12 @@ class ApiStarTestCase(AppEngineTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-type'], 'application/json')
         self.assertEqual(
-            response.json(),
-            {
-                'author': 'alice@example.com',
-                'id': 'alice@example.com/1234',
-                'paste': 1234,
-            },
+            sorted(response.json()),
+            ['author', 'id', 'paste', 'stars']
         )
 
     def test_star_a_paste_for_non_existent_paste(self):
-        url = reverse('api_star')
+        url = reverse('api_star_create')
         data = {'paste': '1234'}
 
         self.assertIsNone(Paste.get_by_id(1234))
@@ -104,7 +100,7 @@ class ApiStarTestCase(AppEngineTestCase):
         )
 
     def test_star_a_paste_requires_post(self):
-        url = reverse('api_star')
+        url = reverse('api_star_create')
 
         self.login('alice@example.com')
         response = self.client.get(url)

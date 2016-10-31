@@ -1,7 +1,6 @@
-Django==1.10.1
+Django==1.10.2
 
-# This fork fixes Django 1.10 support.
-https://github.com/davidwtbuxton/djangae/archive/use-argparse-for-runserver.zip
+https://github.com/potatolondon/djangae/archive/2e0aeb3e6d1783bad04315a14be9cb00cdd4fcc3.zip
 
 GoogleAppEngineCloudStorageClient==1.9.22.1
 Pygments==2.1.3
