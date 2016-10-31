@@ -56,6 +56,7 @@ if not DEBUG:
     opts = TEMPLATES[0]['OPTIONS']
     opts['loaders'] = [('django.template.loaders.cached.Loader', opts['loaders'])]
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
@@ -66,12 +67,6 @@ USE_L10N = False
 USE_TZ = True
 
 STATIC_URL = '/static/'
-
-DEFAULT_FILE_STORAGE = 'djangae.storage.CloudStorage'
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 5
-FILE_UPLOAD_HANDLERS = (
-    'django.core.files.uploadhandler.MemoryFileUploadHandler',
-)
 
 # The '{host}' shortcut is handled by pasty.middleware.CSPHostnameMiddleware.
 CSP_DEFAULT_SRC = ["'none'"]
