@@ -1,19 +1,77 @@
 import datetime
 import json
+import unittest
 
 from django.core.urlresolvers import reverse
 
 from . import AppEngineTestCase, freeze_time
-from pasty.models import Paste
+from pasty.models import Paste, Star, get_starred_pastes
+from pasty import index
 from pasty import utils
+
+
+class AboutTestCase(AppEngineTestCase):
+    def test_get_shows_the_about_page(self):
+        url = reverse('about')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            sorted(response.context_data),
+            ['changelog', 'page_title', 'section'],
+        )
+        self.assertEqual(response.context_data['page_title'], 'About')
+        self.assertEqual(response.context_data['section'], 'about')
+        self.assertEqual(response.template_name, 'pasty/about.html')
+
+
+class PasteHomeTestCase(AppEngineTestCase):
+    def test_redirects_to_new_page(self):
+        url = reverse('home')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/new/')
 
 
 class PasteListTestCase(AppEngineTestCase):
     def test_shows_list_of_pastes(self):
+        for n in range(11):
+            paste = Paste()
+            paste.put()
+            paste.save_content('foo %s' % n, filename='example-%s.txt' % n)
+            index.add_paste(paste)
+
         url = reverse('paste_list')
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.template_name, 'pasty/paste_list.html')
+        self.assertEqual(
+            sorted(response.context_data),
+            ['page_title', 'pastes', 'section', 'tags'],
+        )
+        self.assertEqual(response.context_data['pastes'].count, 11)
+
+
+class PasteDetailTestCase(AppEngineTestCase):
+    def test_shows_detail_for_paste(self):
+        paste = Paste(id=1234, filename='example.txt')
+        paste.put()
+        paste.save_content('foo', filename='example.txt')
+
+        url = reverse('paste_detail', args=[paste.key.id()])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context_data,
+            {
+                'page_title': 'example.txt',
+                'paste': paste,
+                'starred': None,
+            },
+        )
 
 
 class PasteRedirectTestCase(AppEngineTestCase):
@@ -27,6 +85,20 @@ class PasteRedirectTestCase(AppEngineTestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/123456789/')
+
+
+class PasteDownloadTestCase(AppEngineTestCase):
+    def test_download_paste_files_as_zip(self):
+        paste = Paste(id=1234)
+        paste.put()
+        paste.save_content('foo', filename='example.txt')
+
+        url = reverse('paste_download', args=[paste.key.id()])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Disposition'], 'attachment; filename="example.txt.zip"')
+        self.assertEqual(response['Content-type'], 'application/zip')
 
 
 class PasteRawTestCase(AppEngineTestCase):
@@ -52,7 +124,89 @@ class PasteRawTestCase(AppEngineTestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class ApiStarTestCase(AppEngineTestCase):
+class PasteCreateTestCase(AppEngineTestCase):
+    def test_shows_empty_form_on_get(self):
+        url = reverse('paste_create')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            sorted(response.context_data),
+            ['form', 'page_title', 'section'],
+        )
+        self.assertEqual(response.context_data['page_title'], u'New paste')
+        self.assertEqual(response.context_data['section'], 'paste_create')
+
+    def test_forking_from_paste_pre_fills_form(self):
+        paste = Paste(id=1234, description='Foo')
+        paste.put()
+        paste.save_content('foo bar baz', filename='example.txt')
+
+        url = reverse('paste_create')
+        response = self.client.get(url, {'fork': paste.key.id()})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            sorted(response.context_data),
+            ['form', 'page_title', 'section'],
+        )
+        self.assertEqual(response.context_data['page_title'], u'New paste')
+        self.assertEqual(response.context_data['section'], 'paste_create')
+        self.assertEqual(
+            response.context_data['form'].initial,
+            {
+                'content': 'foo bar baz',
+                'description': 'Foo',
+                'filename': 'example.txt',
+            },
+        )
+
+    def test_create_a_new_paste_on_post(self):
+        self.assertIsNone(Paste.get_by_id(1))
+
+        data = {
+            'description': 'Foo',
+            'filename': 'example.txt',
+            'content': 'foo bar baz',
+        }
+
+        url = reverse('paste_create')
+        with freeze_time('2016-12-25'):
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/1/')
+
+        paste = Paste.get_by_id(1)
+
+        self.assertEqual(
+            paste.to_dict(),
+            {
+                'author': u'',
+                'created': datetime.datetime(2016, 12, 25),
+                'description': 'Foo',
+                'filename': 'example.txt',
+                'files': [
+                    {
+                        'content_type': 'text/plain',
+                        'created': datetime.datetime(2016, 12, 25),
+                        'filename': 'example.txt',
+                        'num_lines': 1,
+                        'path': 'pasty/2016/12/25/1/example.txt',
+                    },
+                ],
+                'forked_from': None,
+                'num_files': 1,
+                'num_lines': 1,
+                'preview': (
+                    '<div class="highlight highlight__autumn">'
+                    '<pre><span></span>foo bar baz\n</pre></div>\n'
+                ),
+            },
+        )
+
+
+class ApiStarCreateTestCase(AppEngineTestCase):
     def test_star_a_paste_requires_user_login(self):
         url = reverse('api_star_create')
 
@@ -104,6 +258,63 @@ class ApiStarTestCase(AppEngineTestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 405)
+
+
+class ApiStarDeleteTestCase(AppEngineTestCase):
+    def test_unstar_requires_login(self):
+        url = reverse('api_star_delete')
+
+        response = self.client.post(url, {})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {u'error': u'Please sign in to star pastes'},
+        )
+
+    def test_unstar_non_existent_paste(self):
+        url = reverse('api_star_delete')
+        data = {'paste': '1234'}
+
+        self.assertIsNone(Paste.get_by_id(1234))
+
+        self.login('alice@example.com')
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {'error': 'Does not exist'},
+        )
+
+    def test_unstar_a_paste_removes_star(self):
+        user_email = 'alice@example.com'
+        self.login(user_email)
+
+        paste = Paste(id=1234)
+        paste.put()
+
+        star_id = u'%s/%s' % (user_email, paste.key.id())
+        starred = Star.get_or_insert(star_id, author=user_email, paste=paste.key)
+
+        self.assertEqual(get_starred_pastes(user_email), [paste])
+
+        data = {'paste': paste.key.id()}
+
+        url = reverse('api_star_delete')
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {
+                'id': starred.key.id(),
+                'stars': [],
+            }
+        )
 
 
 class ApiPasteDetailTestCase(AppEngineTestCase):
@@ -166,6 +377,16 @@ class ApiRootTestCase(AppEngineTestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/api/v1/')
+
+
+class ApiIndexTestCase(AppEngineTestCase):
+    @unittest.expectedFailure
+    def test_returns_list_of_api_routes(self):
+        url = reverse('api_index')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {})
 
 
 class ApiPasteCreateTestCase(AppEngineTestCase):

@@ -5,6 +5,11 @@ from pasty.models import Paste, PastyFile
 
 
 class PasteTestCase(AppEngineTestCase):
+    def test_unicode(self):
+        obj = Paste(author='alice@example.com', filename='example.txt')
+
+        self.assertEqual(unicode(obj), u'alice@example.com / example.txt')
+
     def test_get_or_404_with_none_id(self):
         with self.assertRaises(Http404):
             Paste.get_or_404(None)

@@ -173,18 +173,18 @@ def api_root(request):
 
 def api_index(request):
     """Info about the API endpoints."""
-    patterns = utils.get_url_patterns('/api/v1')
+    # patterns = utils.get_url_patterns('/api/v1')
     result = {'api': []}
 
-    for name, pattern in patterns:
-        link = request.build_absolute_uri(pattern)
-        info = {
-            'link': link,
-            'name': name,
-            'pattern': pattern,
-        }
+    # for name, pattern in patterns:
+    #     link = request.build_absolute_uri(pattern)
+    #     info = {
+    #         'link': link,
+    #         'name': name,
+    #         'pattern': pattern,
+    #     }
 
-        result['api'].append(info)
+    #     result['api'].append(info)
 
     return JsonResponse(result)
 
@@ -305,6 +305,8 @@ def api_paste_create(request):
     )
     paste.put()
     paste.save_content(first_file['content'], filename=first_file['filename'])
+    index.add_paste(paste)
+
     result = paste.to_dict()
     status = 201
 

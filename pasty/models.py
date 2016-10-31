@@ -1,7 +1,6 @@
 import mimetypes
 
 import cloudstorage
-from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.utils import safestring
 from django.utils import timezone
@@ -113,10 +112,6 @@ class Paste(ndb.Model):
     @ndb.ComputedProperty
     def num_lines(self):
         return sum(pasty_file.num_lines for pasty_file in self.files)
-
-    @property
-    def download_url(self):
-        return reverse('paste_download', self.key.id())
 
     def save_content(self, content, filename=None):
         # File contents are stored in Cloud Storage. The first file is
