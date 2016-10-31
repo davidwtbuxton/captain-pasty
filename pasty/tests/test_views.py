@@ -1,11 +1,9 @@
 import datetime
 import json
 
-import mock
 from django.core.urlresolvers import reverse
-from django.utils import timezone
 
-from . import AppEngineTestCase
+from . import AppEngineTestCase, freeze_time
 from pasty.models import Paste
 from pasty import utils
 
@@ -124,14 +122,15 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
         )
 
     def test_get_paste_with_one_content_file(self):
-        xmas = datetime.datetime(2016, 12, 25, tzinfo=timezone.utc)
+        xmas = datetime.datetime(2016, 12, 25)
 
-        with mock.patch('django.utils.timezone.now', return_value=xmas):
-            paste = Paste(id=1234)
+        with freeze_time('2016-12-25'):
+            paste = Paste(id=1234, created=xmas)
             paste.put()
             paste.save_content('foo', 'example.txt')
 
         url = reverse('api_paste_detail', args=(paste.key.id(),))
+
 
         response = self.client.get(url)
 
@@ -140,20 +139,21 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
         self.assertEqual(
             response.json(),
             {
-                u'author': u'',
-                u'created': u'2016-12-25T00:00:00Z',
-                u'description': u'',
+                u'author': None,
+                u'created': u'2016-12-25T00:00:00',
+                u'description': None,
                 u'filename': u'example.txt',
                 u'files': [{
-                    u'content': u'pasty/2016/12/25/example.txt',
-                    u'created': u'2016-12-25T00:00:00Z',
+                    u'content_type': u'text/plain',
+                    u'created': u'2016-12-25T00:00:00',
                     u'filename': u'example.txt',
-                    u'id': 2,
-                    u'link': u'/_ah/gcs/app_default_bucket/pasty/2016/12/25/example.txt',
+                    u'num_lines': 1,
+                    u'path': u'pasty/2016/12/25/1234/example.txt',
                 }],
                 u'forked_from': None,
-                u'id': 1,
-                u'summary': u'<table class="highlight highlight__tractable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="highlight highlight__trac"><pre><span></span>foo\n</pre></div>\n</td></tr></table>',
+                u'num_files': 1,
+                u'num_lines': 1,
+                u'preview': u'<div class="highlight highlight__autumn"><pre><span></span>foo\n</pre></div>\n',
             }
         )
 
@@ -216,7 +216,7 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
             response.json(),
             {'error': "'content' is a required property"},
         )
-    maxDiff=None
+
     def test_valid_data_creates_paste(self):
         url = reverse('api_paste_list')
         self.login('alice@example.com')
@@ -231,9 +231,8 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
             ],
         }
         data = json.dumps(data)
-        xmas = datetime.datetime(2016, 12, 25, tzinfo=timezone.utc)
 
-        with mock.patch('django.utils.timezone.now', return_value=xmas):
+        with freeze_time('2016-12-25'):
             response = self.client.post(url, data, content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
@@ -242,23 +241,20 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
             response.json(),
             {
                 u'author': u'alice@example.com',
-                u'created': u'2016-12-25T00:00:00Z',
+                u'created': u'2016-12-25T00:00:00',
                 u'description': u'Short description',
                 u'filename': u'example.txt',
                 u'files': [{
-                    u'content': u'pasty/2016/12/25/example.txt',
-                    u'created': u'2016-12-25T00:00:00Z',
+                    u'content_type': u'text/plain',
+                    u'created': u'2016-12-25T00:00:00',
                     u'filename': u'example.txt',
-                    u'id': 2,
-                    u'link': u'/_ah/gcs/app_default_bucket/pasty/2016/12/25/example.txt',
+                    u'num_lines': 1,
+                    u'path': u'pasty/2016/12/25/1/example.txt',
                 }],
                 u'forked_from': None,
-                u'id': 1,
-                u'summary': (u'<table class="highlight highlight__tractable">'
-                    '<tr><td class="linenos"><div class="linenodiv"><pre>1'
-                    '</pre></div></td><td class="code">'
-                    '<div class="highlight highlight__trac"><pre><span></span>'
-                    'Foo bar baz\n</pre></div>\n</td></tr></table>'),
+                u'num_lines': 1,
+                u'num_files': 1,
+                u'preview': (u'<div class="highlight highlight__autumn">'
+                    '<pre><span></span>Foo bar baz\n</pre></div>\n'),
             },
         )
-

@@ -1,7 +1,12 @@
+import contextlib
 import os
 
+import freezegun
+import mock
 from django.test import TestCase
+from freezegun.api import FakeDatetime
 
+from google.appengine.api import datastore_types
 from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
@@ -42,3 +47,21 @@ class AppEngineTestCase(TestCase):
     def logout(self):
         for key in self._user_keys:
             del os.environ[key]
+
+
+@contextlib.contextmanager
+def freeze_time(*args, **kwargs):
+    # N.B. DOES NOT WORK AS A CLASS OR METHOD DECORATOR.
+    # Make ndb work with freezegun. Without this it raises BadValueError when
+    # validating the data for the datastore.
+    # https://nvbn.github.io/2016/04/14/gae-datastore-freeze-time/
+
+    dtypes = datastore_types
+
+    with mock.patch('google.appengine.ext.db.DateTimeProperty.data_type', new=FakeDatetime):
+        dtypes._VALIDATE_PROPERTY_VALUES[FakeDatetime] = dtypes.ValidatePropertyNothing
+        dtypes._PACK_PROPERTY_VALUES[FakeDatetime] = dtypes.PackDatetime
+        dtypes._PROPERTY_MEANINGS[FakeDatetime] = dtypes.entity_pb.Property.GD_WHEN
+
+        with freezegun.freeze_time(*args, **kwargs):
+            yield
