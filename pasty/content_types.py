@@ -5,6 +5,8 @@ import mimetypes
 
 EXTRA_TYPES = {
     '.yaml': 'application/x-yaml',
+    '.json': 'application/json',    # App Engine: text/plain
+    '.js': 'application/javascript',    # App Engine: application/x-javascript
 }
 
 
