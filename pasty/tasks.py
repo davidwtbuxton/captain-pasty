@@ -86,19 +86,39 @@ def convert_peelings_task():
     return pipe
 
 
+def make_peeling_filename(obj):
+    # Peelings have a language, but no filename.
+    language_map = {
+        'JSCRIPT': '.js',
+        'PLAIN': '.txt',
+        'BASH': '.sh',
+        'PYTHON': '.py',
+        'CSS': '.css',
+        'SQL': '.sql',
+        'CPP': '.cpp',
+        'DIFF': '.diff',
+        'POWERSHELL': '.ps1',
+    }
+
+    language = obj['language']
+
+    return u'untitled' + language_map.get(language, '.txt')
+
+
 def convert_peeling(peeling):
     """Convert the previous peelings entities to pastes."""
     data = peeling.to_dict()
     paste_id = peeling.key.id()
-    forked_from = ndb.Key(Paste, data['fork_of']) if data['fork_of'] else None
+    forked_from = ndb.Key(Paste, data['fork_of_id']) if data['fork_of_id'] else None
+    filename = make_peeling_filename(data)
 
     obj = Paste(
         id=paste_id,
-        author=data['author_email'],
+        author=None, # All peelings were anonymous.
         created=data['created'],
         filename='',
         description=data['title'],
         forked_from=forked_from,
     )
     obj.put()
-    obj.save_content(data['content'], filename='')
+    obj.save_content(data['content'], filename=filename)
