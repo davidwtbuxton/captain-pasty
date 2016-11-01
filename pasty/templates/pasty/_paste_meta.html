@@ -13,7 +13,7 @@
 		– {{ paste.num_lines }} line{{ paste.num_lines|pluralize }} in {{ paste.num_files }} file{{ paste.num_files|pluralize }}
 
 		{% if paste.forked_from %}
-			– forked from <a href="{% url 'paste_detail' paste.forked_from.pk %}">{{ paste.forked_from }}</a>
+			– forked from <a href="{% url 'paste_detail' paste.forked_from.id %}">{{ paste.forked_from.get }}</a>
 		{% endif %}
 	</p>
 	<p class="paste-summary__description">
