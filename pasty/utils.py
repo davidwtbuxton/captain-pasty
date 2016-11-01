@@ -77,7 +77,7 @@ def highlight_content(content, language=None, filename=None):
 def summarize_content(content, language=None, filename=None):
     """Returns a summary of the content, with syntax highlighting."""
     lines = 10
-    max_summary_size = 10 * 1024
+    max_summary_size = 10 * 256
     content = content[:max_summary_size]
 
     summary = u'\n'.join(content.strip().splitlines()[:lines]).strip()

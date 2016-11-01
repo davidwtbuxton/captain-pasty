@@ -121,18 +121,16 @@ $body-background: #fff;
 
 .paste-form__content {
 	max-height: unset;
+
+	@media (min-width: $tablet) {
+		height: 300px;
+	}
 }
 
 .paste-form__add-file {
 	cursor: pointer;
 }
 
-@media (min-width: $tablet) {
-
-	.paste-form__content {
-		height: 300px;
-	}
-}
 
 .paste__file {
 	margin-top: 18px;
@@ -164,10 +162,25 @@ h2.paste__file-name {
 }
 
 .highlight pre {
-	width: 100%;
+	max-width: 100vw;
 	white-space: pre-wrap;
 	background-color: unset;
 	color: unset;
+
+	$side-list-width: 300px;
+
+	@media (min-width: $tablet) {
+		max-width: $tablet - $side-list-width;
+	}
+
+	@media (min-width: $desktop) {
+		max-width: $desktop - $side-list-width;
+	}
+
+	@media (min-width: $widescreen) {
+		max-width: $widescreen - $side-list-width;
+	}
+
 }
 
 .drag-start {
