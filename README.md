@@ -13,6 +13,10 @@ You must install the App Engine SDK yourself. Then install Captain Pasty and its
     $ cd captain-pasty
     $ ./installdeps.sh
 
+Update the CSS:
+
+    $ npm run build && npm run watch
+
 Run the development server:
 
     $ python manage.py runserver
