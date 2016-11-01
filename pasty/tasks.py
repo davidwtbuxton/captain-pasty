@@ -49,7 +49,7 @@ def resave_pastes_task():
             handler_spec='pasty.tasks.resave_paste',
             input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
             params={'entity_kind': 'pasty.models.Paste'},
-            shards=1,
+            shards=4,
     )
     pipe.start(queue_name='resave-pastes', base_path=_pipeline_base_path)
 
@@ -79,7 +79,7 @@ def convert_peelings_task():
         handler_spec='pasty.tasks.convert_peeling',
         input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
         params={'entity_kind': 'pasty.models.Peeling'},
-        shards=1,
+        shards=4,
     )
     pipe.start(queue_name='convert-peelings', base_path=_pipeline_base_path)
 

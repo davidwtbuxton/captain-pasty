@@ -98,5 +98,5 @@ $(document).ready(function() {
 		$(document).on('click', hideAdvancedSearch);
 	}
 
-	$('.search').on('focus', 'input', showAdvancedSearch);
+	// $('.search').on('focus', 'input', showAdvancedSearch);
 });

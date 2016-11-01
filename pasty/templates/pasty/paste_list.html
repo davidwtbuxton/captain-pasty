@@ -34,8 +34,6 @@
 
 {% if pastes.has_next %}
 	<nav>
-		<span>Showing {{ pastes|length }} of {{ pastes.count }} results.</span>
-
 		<a class="button" href="?{% params request.GET p=pastes.next_page_number %}">
 			<span class="icon" aria-hidden="true">
 				<i class="fa fa-arrow-circle-right"></i>
