@@ -1,5 +1,5 @@
 application: captain-pasty
-version: dev
+version: captain-pasty
 runtime: python27
 api_version: 1
 threadsafe: true
