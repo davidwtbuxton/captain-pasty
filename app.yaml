@@ -8,6 +8,7 @@ handlers:
 
   - url: /static/
     static_dir: static
+    login: required
     secure: always
 
   - url: /_ah/(mapreduce|queue|warmup).*
@@ -16,6 +17,7 @@ handlers:
 
   - url: /.*
     script: project.wsgi.application
+    login: required
     secure: always
 
 skip_files:
