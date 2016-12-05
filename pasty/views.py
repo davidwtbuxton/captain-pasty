@@ -2,12 +2,10 @@ import json
 import zipfile
 
 import jsonschema
-import mistune
 from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse as render
-from django.utils import safestring
 from django.views.decorators.http import require_http_methods
 from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
@@ -149,21 +147,6 @@ def paste_create(request):
     }
 
     return render(request, 'pasty/paste_form.html', context)
-
-
-def about(request):
-    with open('CHANGELOG.md') as fh:
-        text = fh.read()
-        changelog = mistune.markdown(text)
-        changelog = safestring.mark_safe(changelog)
-
-    context = {
-        'page_title': u'About',
-        'section': 'about',
-        'changelog': changelog,
-    }
-
-    return render(request, 'pasty/about.html', context)
 
 
 def api_root(request):

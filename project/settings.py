@@ -28,6 +28,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'pasty.middleware.GoogleUserMiddleware',
+    'pasty.middleware.PastyVersionMiddleware',
     'pasty.middleware.CSPHostnameMiddleware',
     'csp.middleware.CSPMiddleware',
 ]

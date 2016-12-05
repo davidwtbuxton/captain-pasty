@@ -10,21 +10,6 @@ from pasty import index
 from pasty import utils
 
 
-class AboutTestCase(AppEngineTestCase):
-    def test_get_shows_the_about_page(self):
-        url = reverse('about')
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            sorted(response.context_data),
-            ['changelog', 'page_title', 'section'],
-        )
-        self.assertEqual(response.context_data['page_title'], 'About')
-        self.assertEqual(response.context_data['section'], 'about')
-        self.assertEqual(response.template_name, 'pasty/about.html')
-
-
 class PasteHomeTestCase(AppEngineTestCase):
     def test_redirects_to_new_page(self):
         url = reverse('home')
