@@ -1,3 +1,5 @@
+from google.appengine.api import modules
+
 from . import utils
 
 
@@ -41,5 +43,20 @@ class CSPHostnameMiddleware(object):
             if header in response:
                 value = response[header]
                 response[header] = value.format(host=host)
+
+        return response
+
+
+class PastyVersionMiddleware(object):
+    """Adds a X-Pasty-Version header to the response."""
+    key = 'X-Pasty-Version'
+    version = modules.get_current_version_name()
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response[self.key] = self.version
 
         return response
