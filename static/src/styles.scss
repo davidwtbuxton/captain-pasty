@@ -1,9 +1,29 @@
+@import "sass/utilities/initial-variables";
+
 $fa-font-path: "fonts";
 $body-background: #fff;
+$body-size: 14px;
+
+$link: $blue;
+$link-visited: $link;
+$link-hover: $link;
+
+$weight-normal: 500;
 
 @import "bulma";
 @import "font-awesome";
 @import "highlight-styles";
+
+
+a:hover {
+	text-decoration: underline;
+}
+
+.content {
+	h1, h2, h3, h4, h5, h6 {
+		font-weight: inherit;
+	}
+}
 
 
 .captain-pasty {
@@ -68,6 +88,24 @@ $body-background: #fff;
 	}
 }
 
+.content a.search-tags__tag {
+	background-color: white;
+	border: 1px solid $link;
+	color: $link;
+
+	vertical-align: middle;
+
+	// Really specific selector for the tag hover.
+	&:hover {
+		border-bottom-color: $link;
+	}
+
+	.icon {
+		margin-left: 5px;
+		margin-right: -6px;
+	}
+}
+
 .pasty-main {
 	padding-bottom: 10px;
 	padding-top: 80px;
@@ -111,6 +149,10 @@ $body-background: #fff;
 
 		&:hover {
 			border-color: $link;
+		}
+
+		a {
+			text-decoration: none;
 		}
 	}
 }

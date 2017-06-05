@@ -8,7 +8,7 @@
     "url": "https://github.com/davidwtbuxton/captain-pasty.git"
   },
   "dependencies": {
-    "bulma": "~0.1.2",
+    "bulma": "~0.4.2",
     "font-awesome": "~4.6.3",
     "jquery": "~3.1.1"
   },

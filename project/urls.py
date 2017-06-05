@@ -1,4 +1,8 @@
+import session_csrf
 from django.conf.urls import include, url
+
+
+session_csrf.monkeypatch()
 
 
 urlpatterns = [

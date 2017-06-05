@@ -6,10 +6,14 @@
 	<h1>
 		Pastes
 
-		{% if tags %}
+		{% if terms %}
 			<span class="search-tags">
-			{% for tag in tags %}
-				<span class="tag is-info is-medium">{{ tag }}</span>
+			{% for tag, label in terms %}
+				<a class="search-tags__tag tag is-small" href="?{{ tag }}">{{ label }}
+					<span class="icon is-small" aria-hidden="true">
+						<i class="fa fa-arrow-circle-right"></i>
+					</span>
+				</a>
 			{% endfor %}
 			</span>
 		{% endif %}

@@ -40,7 +40,7 @@ def paste_list(request):
         'page_title': page_title,
         'pastes': pastes,
         'section': 'paste_list',
-        'tags': tags,
+        'terms': terms,
     }
 
     return render(request, 'pasty/paste_list.html', context)
@@ -105,6 +105,11 @@ def paste_raw(request, paste_id, filename):
 
 
 def paste_create(request):
+    """Make a new Paste.
+
+    Add ?fork=xyz to a GET request and the initial form will have an existing
+    Paste's contents.
+    """
     fork_id = request.GET.get('fork')
     forked_from = Paste.get_by_id(int(fork_id)) if fork_id else None
 
@@ -112,7 +117,9 @@ def paste_create(request):
         form = PasteForm(request.POST)
 
         if form.is_valid():
-            paste = Paste(author=request.user_email, forked_from=forked_from)
+            forked_key = forked_from.key if forked_from else None
+
+            paste = Paste(author=request.user_email, forked_from=forked_key)
             paste.description = form.cleaned_data['description']
             paste.put()
 

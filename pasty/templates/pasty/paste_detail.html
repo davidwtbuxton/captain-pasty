@@ -19,7 +19,7 @@
 		<span>Download zip</span>
 	</a>
 
-	<button type="button" class="button is-small star__action" data-paste-id="{{ paste.key.id }}" data-url-create="{% url 'api_star_create' %}" data-url-delete="{% url 'api_star_delete' %}" data-csrf-token="{{ csrf_token }}">
+	<button type="button" class="button is-small star__action" data-paste-id="{{ paste.key.id }}" data-url-create="{% url 'api_star_create' %}" data-url-delete="{% url 'api_star_delete' %}" data-csrf-token="{{ csrf_token }}" title="Star / remove star">
 		<span class="icon is-small" aria-hidden="true">
 			<i class="fa fa-star{% if not starred %}-o{% endif %}"></i>
 		</span>

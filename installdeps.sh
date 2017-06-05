@@ -1,6 +1,5 @@
 #!/bin/bash
-set -eu
-set -x
+set -o nounset -o errexit -o xtrace
 
 LIBS="libs"
 

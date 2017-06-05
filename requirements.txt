@@ -1,6 +1,6 @@
-Django==1.10.2
+Django==1.10.7
 
-https://github.com/potatolondon/djangae/archive/2e0aeb3e6d1783bad04315a14be9cb00cdd4fcc3.zip
+https://github.com/potatolondon/djangae/archive/35316d24f5d98105dc839f871c644b9a1ac5c34c.zip
 
 GoogleAppEngineCloudStorageClient==1.9.22.1
 Pygments==2.1.3
@@ -8,6 +8,7 @@ mistune==0.7.3
 jsonschema==2.5.1
 functools32==3.2.3.post2
 django-csp==3.1
+django_session_csrf==0.7.1
 
 GoogleAppEngineMapReduce==1.9.22.0
 GoogleAppEnginePipeline==1.9.22.1

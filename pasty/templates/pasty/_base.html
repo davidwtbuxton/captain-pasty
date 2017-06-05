@@ -13,12 +13,15 @@
 				<a class="nav-item is-brand{% if section == 'paste_list' %} is-active{% endif %}" href="{% url 'paste_list' %}">Pastes</a>
 				<a class="nav-item{% if section == 'paste_create' %} is-active{% endif %}" href="{% url 'paste_create' %}">New paste</a>
 				<form class="nav-item search" action="{% url 'paste_search' %}">
-					<div class="control has-addons">
-						{% render_input search_form.q class="input" placeholder="Search" %}
+					<div class="field has-addons">
+						<p class="control">
+							{% render_input search_form.q class="input" placeholder="Search" %}
+						</p>
 
 						<button class="button" type="submit">Submit</button>
 					</div>
 
+{% comment %}
 					<div class="advanced-search hidden">
 						{% render_label search_form.filename class="label is-small" %}
 						<div class="control">
@@ -35,6 +38,7 @@
 							{% render_input search_form.content_type class="input" placeholder="application/json" %}
 						</div>
 					</div>
+{% endcomment %}
 				</form>
 
 				{% if is_current_user_admin %}

@@ -105,7 +105,7 @@ def build_query(qdict):
         'author': lambda x: (u'author:"%s"' % x, u'by %s' % x),
         'content_type': lambda x: (u'content_type:"%s"' % x, u'content type like "%s"' % x),
         'filename': lambda x: (u'filename:"%s"' % x, u'filename like "%s"' % x),
-        'q': lambda x: (x, u'containing "%s"' % x),
+        'q': lambda x: (x, u'matching "%s"' % x),
     }
 
     for name in params:
