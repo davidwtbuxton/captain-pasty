@@ -34,7 +34,7 @@ class PasteListTestCase(AppEngineTestCase):
         self.assertEqual(response.template_name, 'pasty/paste_list.html')
         self.assertEqual(
             sorted(response.context_data),
-            ['page_title', 'pastes', 'section', 'tags'],
+            ['page_title', 'pastes', 'section', 'terms'],
         )
         self.assertEqual(response.context_data['pastes'].count, 11)
 

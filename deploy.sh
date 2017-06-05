@@ -12,7 +12,7 @@ set -eu
 pushd "$(dirname "$0")"
 
 APPLICATION=$(grep -E '^application:' app.yaml | sed 's/application: *//')
-VERSION=$(git describe --tags | tr '[:upper:].' '[:lower:]-')
+VERSION=$(git describe --tags --long --dirty | tr '[:upper:].' '[:lower:]-')
 
 read -r -p "Application (default '$APPLICATION'): " user_application
 read -r -p "Version (default '$VERSION'): " user_version
