@@ -10,6 +10,11 @@ class PasteTestCase(AppEngineTestCase):
 
         self.assertEqual(unicode(obj), u'alice@example.com / example.txt')
 
+    def test_unicode_for_anonymous_author(self):
+        obj = Paste(filename='example.txt')
+
+        self.assertEqual(unicode(obj), u'anonymous / example.txt')
+
     def test_get_or_404_with_none_id(self):
         with self.assertRaises(Http404):
             Paste.get_or_404(None)

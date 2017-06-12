@@ -88,7 +88,9 @@ class Paste(ndb.Model):
     preview = ndb.TextProperty()
 
     def __unicode__(self):
-        return u'%s / %s' % (self.author, self.filename)
+        author = self.author if self.author else u'anonymous'
+
+        return u'%s / %s' % (author, self.filename)
 
     @classmethod
     def get_or_404(cls, paste_id):
