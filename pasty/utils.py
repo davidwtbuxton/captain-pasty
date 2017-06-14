@@ -1,6 +1,7 @@
 import functools
 import io
 import itertools
+import os.path
 import string
 
 import pygments
@@ -40,10 +41,7 @@ def get_language_names():
     return names
 
 
-def highlight_content(content, language=None, filename=None):
-    """Applies code highlighting and returns the markup. If language or filename
-    is None then the language is guessed from the content.
-    """
+def choose_lexer(content, language=None, filename=None):
     lexer = None
 
     if language:
@@ -53,10 +51,16 @@ def highlight_content(content, language=None, filename=None):
             pass
 
     if filename:
-        try:
-            lexer = lexers.get_lexer_for_filename(filename)
-        except ClassNotFound:
-            pass
+        _, ext = os.path.splitext(filename.lower())
+
+        if ext == '.txt':
+            # Else we get the ResourceLexer, which is not useful.
+            lexer = lexers.get_lexer_by_name('text')
+        else:
+            try:
+                lexer = lexers.get_lexer_for_filename(filename)
+            except ClassNotFound:
+                pass
 
     if not lexer:
         try:
@@ -65,6 +69,15 @@ def highlight_content(content, language=None, filename=None):
             # No match by language or filename, and Pygments can't guess what
             # it is. So let's treat it as plain text.
             lexer = lexers.get_lexer_by_name('text')
+
+    return lexer
+
+
+def highlight_content(content, language=None, filename=None):
+    """Applies code highlighting and returns the markup. If language or filename
+    is None then the language is guessed from the content.
+    """
+    lexer = choose_lexer(content, language=language, filename=filename)
 
     style_class = highlight_css[PYGMENTS_STYLE][0]
     cssclass = 'highlight ' + style_class
