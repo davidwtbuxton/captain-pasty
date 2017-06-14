@@ -58,6 +58,15 @@ class PasteDetailTestCase(AppEngineTestCase):
             },
         )
 
+    def test_shows_detail_for_paste_without_filename_or_description(self):
+        paste = Paste(id=1234, filename='')
+        paste.put()
+        paste.save_content('foo bar baz', filename='')
+
+        url = reverse('paste_detail', args=[paste.key.id()])
+        response = self.client.get(url)
+
+        self.assertContains(response, 'foo bar baz', status_code=200)
 
 class PasteRedirectTestCase(AppEngineTestCase):
     def test_redirects_peelings_link(self):
@@ -178,6 +187,51 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'filename': 'example.txt',
                         'num_lines': 1,
                         'path': 'pasty/2016/12/25/1/example.txt',
+                    },
+                ],
+                'forked_from': None,
+                'num_files': 1,
+                'num_lines': 1,
+                'preview': (
+                    '<div class="highlight highlight__autumn">'
+                    '<pre><span></span>foo bar baz\n</pre></div>\n'
+                ),
+            },
+        )
+
+    def test_create_a_new_paste_without_filename_or_description(self):
+        self.assertIsNone(Paste.get_by_id(1))
+
+        data = {
+            'filename': '',
+            'description': '',
+            'content': 'foo bar baz',
+        }
+        url = reverse('paste_create')
+
+        with freeze_time('2016-12-25'):
+            response = self.client.post(url, data)
+
+        detail_url = reverse('paste_detail', args=[1])
+
+        self.assertRedirects(response, detail_url)
+
+        paste = Paste.get_by_id(1)
+
+        self.assertEqual(
+            paste.to_dict(),
+            {
+                'author': u'',
+                'created': datetime.datetime(2016, 12, 25),
+                'description': u'',
+                'filename': u'untitled.txt',
+                'files': [
+                    {
+                        'content_type': 'text/plain',
+                        'created': datetime.datetime(2016, 12, 25),
+                        'filename': 'untitled.txt',
+                        'num_lines': 1,
+                        'path': u'pasty/2016/12/25/1/untitled.txt',
                     },
                 ],
                 'forked_from': None,

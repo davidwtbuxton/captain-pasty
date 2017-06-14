@@ -120,6 +120,10 @@ class Paste(ndb.Model):
         # summarized and stored in the paste itself.  Paste.files is a list
         # of dicts, where each dict has a key for 'filename', and 'path',
         # with 'path' being the object name in Cloud Storage (minus the bucket).
+
+        if not filename:
+            filename = u'untitled.txt'
+
         if not self.files:
             self.preview = utils.summarize_content(content, filename=filename)
             self.filename = filename
