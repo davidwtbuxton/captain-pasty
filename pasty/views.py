@@ -179,6 +179,19 @@ def api_index(request):
     return JsonResponse(result)
 
 
+def api_star_list(request):
+    """Show what pastes the current user has starred (if any)."""
+    if not request.user_email:
+        result = {u'error': u'Please sign in to star pastes'}
+        return JsonResponse(result, status=403)
+
+    result = {
+        'stars': [p.to_dict() for p in get_starred_pastes(request.user_email)],
+    }
+
+    return JsonResponse(result)
+
+
 @require_http_methods(['POST'])
 def api_star_create(request):
     """Adds the paste to the user's starred pastes (for POSTs)."""

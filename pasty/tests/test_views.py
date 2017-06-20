@@ -245,6 +245,67 @@ class PasteCreateTestCase(AppEngineTestCase):
         )
 
 
+class ApiStarListTestCase(AppEngineTestCase):
+    def test_anonymous_user_denied(self):
+        url = reverse('api_star_list')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {u'error': u'Please sign in to star pastes'},
+        )
+
+    def test_shows_empty_list_of_stars(self):
+        url = reverse('api_star_list')
+
+        self.login('alice@example.com')
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {u'stars': []},
+        )
+
+    def test_shows_starred_pastes(self):
+        user_email = u'alice@example.com'
+
+        paste = Paste(id=1234, created=datetime.datetime(2016, 12, 25))
+        paste.put()
+        starred = paste.create_star_for_author(user_email)
+
+        url = reverse('api_star_list')
+
+        self.login(user_email)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-type'], 'application/json')
+        self.assertEqual(
+            response.json(),
+            {
+                u'stars': [
+                    {
+                        u'author': None,
+                        u'created': u'2016-12-25T00:00:00',
+                        u'description': None,
+                        u'filename': None,
+                        u'files': [],
+                        u'forked_from': None,
+                        u'num_files': 0,
+                        u'num_lines': 0,
+                        u'preview': None,
+                    },
+                ],
+            },
+        )
+
+
 class ApiStarCreateTestCase(AppEngineTestCase):
     def test_star_a_paste_requires_user_login(self):
         url = reverse('api_star_create')
