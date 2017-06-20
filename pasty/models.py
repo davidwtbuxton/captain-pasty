@@ -138,11 +138,24 @@ class Paste(ndb.Model):
 
         return self.put()
 
+    def create_star_for_author(self, author):
+        """Helper to get/create a Star for this paste."""
+        return Star.create(author, self)
+
 
 class Star(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     author = ndb.StringProperty(indexed=True)
     paste = ndb.KeyProperty(Paste)
+
+    @classmethod
+    def create(self, author, paste):
+        # We construct the star id ourselves so that if you star something
+        # twice it doesn't create multiple stars for the same paste.
+        star_id = u'%s/%s' % (author, paste.key.id())
+        star = Star.get_or_insert(star_id, author=author, paste=paste.key)
+
+        return star
 
 
 class Peeling(ndb.Model):

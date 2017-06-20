@@ -334,9 +334,7 @@ class ApiStarDeleteTestCase(AppEngineTestCase):
 
         paste = Paste(id=1234)
         paste.put()
-
-        star_id = u'%s/%s' % (user_email, paste.key.id())
-        starred = Star.get_or_insert(star_id, author=user_email, paste=paste.key)
+        starred = paste.create_star_for_author(user_email)
 
         self.assertEqual(get_starred_pastes(user_email), [paste])
 

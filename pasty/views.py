@@ -192,10 +192,7 @@ def api_star_create(request):
     except Http404:
         return JsonResponse({'error': 'Does not exist'}, status=400)
 
-    # We construct the star id ourselves so that if you star something
-    # twice it doesn't create multiple stars for the same paste.
-    star_id = u'%s/%s' % (request.user_email, paste.key.id())
-    starred = Star.get_or_insert(star_id, author=request.user_email, paste=paste.key)
+    starred = paste.create_star_for_author(request.user_email)
 
     result = {
         'id': starred.key.id(),
