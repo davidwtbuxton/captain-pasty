@@ -115,6 +115,16 @@ class Paste(ndb.Model):
     def num_lines(self):
         return sum(pasty_file.num_lines for pasty_file in self.files)
 
+    def to_dict(self):
+        # Avoid problems when JSON-ifying a forked paste.
+        obj = super(Paste, self).to_dict()
+        obj['id'] = self.key.id()
+
+        if obj['forked_from']:
+            obj['forked_from'] = obj['forked_from'].id()
+
+        return obj
+
     def save_content(self, content, filename=None):
         # File contents are stored in Cloud Storage. The first file is
         # summarized and stored in the paste itself.  Paste.files is a list

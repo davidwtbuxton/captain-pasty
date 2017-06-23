@@ -1,3 +1,5 @@
+import datetime
+
 from django.http import Http404
 
 from . import AppEngineTestCase
@@ -42,6 +44,30 @@ class PasteTestCase(AppEngineTestCase):
         obj = Paste.get_or_404('1234')
 
         self.assertEqual(obj.key.id(), 1234)
+
+    def test_to_dict_for_forked_paste(self):
+        xmas = datetime.datetime(2016, 12, 25)
+        orig_key = Paste(id=1234, created=xmas).put()
+        fork = Paste(id=5678, created=xmas, forked_from=orig_key)
+        fork.put()
+
+        result = fork.to_dict()
+
+        self.assertEqual(
+            result,
+            {
+                u'author': None,
+                u'created': xmas,
+                u'description': None,
+                u'filename': None,
+                u'files': [],
+                u'forked_from': 1234,
+                u'id': 5678,
+                u'num_files': 0,
+                u'num_lines': 0,
+                u'preview': None,
+            },
+        )
 
 
 class PastyFileTestCase(AppEngineTestCase):

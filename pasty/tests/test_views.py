@@ -190,6 +190,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                     },
                 ],
                 'forked_from': None,
+                'id': 1,
                 'num_files': 1,
                 'num_lines': 1,
                 'preview': (
@@ -235,6 +236,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                     },
                 ],
                 'forked_from': None,
+                'id': 1,
                 'num_files': 1,
                 'num_lines': 1,
                 'preview': (
@@ -297,6 +299,7 @@ class ApiStarListTestCase(AppEngineTestCase):
                         u'filename': None,
                         u'files': [],
                         u'forked_from': None,
+                        u'id': 1234,
                         u'num_files': 0,
                         u'num_lines': 0,
                         u'preview': None,
@@ -332,7 +335,7 @@ class ApiStarCreateTestCase(AppEngineTestCase):
         self.assertEqual(response['Content-type'], 'application/json')
         self.assertEqual(
             sorted(response.json()),
-            ['author', 'id', 'paste', 'stars']
+            ['author', 'id', 'paste', 'stars'],
         )
 
     def test_star_a_paste_for_non_existent_paste(self):
@@ -460,6 +463,7 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                     u'path': u'pasty/2016/12/25/1234/example.txt',
                 }],
                 u'forked_from': None,
+                u'id': 1234,
                 u'num_files': 1,
                 u'num_lines': 1,
                 u'preview': u'<div class="highlight highlight__autumn"><pre><span></span>foo\n</pre></div>\n',
@@ -571,6 +575,7 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                     u'path': u'pasty/2016/12/25/1/example.txt',
                 }],
                 u'forked_from': None,
+                u'id': 1,
                 u'num_lines': 1,
                 u'num_files': 1,
                 u'preview': (u'<div class="highlight highlight__autumn">'
