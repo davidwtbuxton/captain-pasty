@@ -197,6 +197,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                     '<div class="highlight highlight__autumn">'
                     '<pre><span></span>foo bar baz\n</pre></div>\n'
                 ),
+                'url': '/1/',
             },
         )
 
@@ -243,6 +244,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                     '<div class="highlight highlight__autumn">'
                     '<pre><span></span>foo bar baz\n</pre></div>\n'
                 ),
+                'url': '/1/',
             },
         )
 
@@ -303,6 +305,7 @@ class ApiStarListTestCase(AppEngineTestCase):
                         u'num_files': 0,
                         u'num_lines': 0,
                         u'preview': None,
+                        u'url': u'/1234/',
                     },
                 ],
             },
@@ -467,6 +470,7 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                 u'num_files': 1,
                 u'num_lines': 1,
                 u'preview': u'<div class="highlight highlight__autumn"><pre><span></span>foo\n</pre></div>\n',
+                u'url': u'/1234/',
             }
         )
 
@@ -580,5 +584,6 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                 u'num_files': 1,
                 u'preview': (u'<div class="highlight highlight__autumn">'
                     '<pre><span></span>Foo bar baz\n</pre></div>\n'),
+                u'url': u'/1/',
             },
         )

@@ -26,6 +26,21 @@ $(document).ready(function() {
 					$('.star__action .star__status').html('Starred');
 					$('.star__action .fa').addClass('fa-star').removeClass('fa-star-o');
 				}
+
+				updateStarList();
+			}
+		});
+	}
+
+	function updateStarList() {
+		var $listEl = $('.stars__list'),
+			urlList = $listEl.get(0).dataset.urlList;
+
+		$.get({
+			url: urlList,
+			success: function(data) {
+
+
 			}
 		});
 	}

@@ -77,7 +77,7 @@
 						Starred pastes
 					</h2>
 
-					<ul class="stars__list">
+					<ul class="stars__list" data-url-list="{% url 'api_star_list' %}">
 					{% for paste in starred_pastes %}
 						<li class="stars__summary">
 							<a href="{% url 'paste_detail' paste.key.id %}">{{ paste }}</a>

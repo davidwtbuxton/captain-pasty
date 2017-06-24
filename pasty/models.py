@@ -2,6 +2,7 @@ import mimetypes
 
 import cloudstorage
 from django.http import Http404
+from django.urls import reverse
 from django.utils import safestring
 from django.utils import timezone
 from google.appengine.api import app_identity
@@ -115,10 +116,17 @@ class Paste(ndb.Model):
     def num_lines(self):
         return sum(pasty_file.num_lines for pasty_file in self.files)
 
+    @property
+    def url(self):
+        url = reverse('paste_detail', args=[self.key.id()])
+
+        return url
+
     def to_dict(self):
         # Avoid problems when JSON-ifying a forked paste.
         obj = super(Paste, self).to_dict()
         obj['id'] = self.key.id()
+        obj['url'] = self.url
 
         if obj['forked_from']:
             obj['forked_from'] = obj['forked_from'].id()

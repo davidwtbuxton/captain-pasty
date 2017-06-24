@@ -66,6 +66,7 @@ class PasteTestCase(AppEngineTestCase):
                 u'num_files': 0,
                 u'num_lines': 0,
                 u'preview': None,
+                u'url': u'/5678/',
             },
         )
 
