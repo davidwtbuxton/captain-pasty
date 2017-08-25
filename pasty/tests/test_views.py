@@ -298,7 +298,7 @@ class ApiStarListTestCase(AppEngineTestCase):
                         u'author': None,
                         u'created': u'2016-12-25T00:00:00',
                         u'description': None,
-                        u'filename': None,
+                        u'filename': 'untitled.txt',
                         u'files': [],
                         u'forked_from': None,
                         u'id': 1234,

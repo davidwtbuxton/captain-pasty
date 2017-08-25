@@ -1,6 +1,6 @@
 Django==1.10.7
 
-https://github.com/potatolondon/djangae/archive/35316d24f5d98105dc839f871c644b9a1ac5c34c.zip
+djangae==0.9.10
 
 GoogleAppEngineCloudStorageClient==1.9.22.1
 Pygments==2.1.3

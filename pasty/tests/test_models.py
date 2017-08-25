@@ -59,7 +59,7 @@ class PasteTestCase(AppEngineTestCase):
                 u'author': None,
                 u'created': xmas,
                 u'description': None,
-                u'filename': None,
+                u'filename': 'untitled.txt',
                 u'files': [],
                 u'forked_from': 1234,
                 u'id': 5678,

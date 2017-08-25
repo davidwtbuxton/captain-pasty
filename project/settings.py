@@ -124,7 +124,7 @@ LOGGING = {
             'propagate': True,
         },
         'djangae': {
-            'level': 'WARN'
+            'level': 'WARN',
         },
     },
 }

@@ -29,9 +29,10 @@ def make_name_for_storage(paste, filename):
 
 class PastyFile(ndb.Model):
     DEFAULT_CONTENT_TYPE = 'text/plain'
+    DEFAULT_FILENAME = u'untitled.txt'
 
     created = ndb.DateTimeProperty(auto_now_add=True)
-    filename = ndb.StringProperty()
+    filename = ndb.StringProperty(required=True)
     path = ndb.StringProperty()
     num_lines = ndb.IntegerProperty(default=0)
 
@@ -50,7 +51,7 @@ class PastyFile(ndb.Model):
         return '/%s/%s' % (bucket, self.path)
 
     @classmethod
-    def from_content(self, paste, filename, content):
+    def from_content(cls, paste, filename, content):
         """Save the content to cloud storage and return a new PastyFile."""
         num_lines = utils.count_lines(content)
         path = make_name_for_storage(paste, filename)
@@ -58,7 +59,7 @@ class PastyFile(ndb.Model):
         if isinstance(content, unicode):
             content = content.encode('utf-8')
 
-        obj = PastyFile(filename=filename, path=path, num_lines=num_lines)
+        obj = cls(filename=filename, path=path, num_lines=num_lines)
 
         with obj.open('w') as fh:
             fh.write(content)
@@ -82,7 +83,7 @@ class PastyFile(ndb.Model):
 class Paste(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     author = ndb.StringProperty()
-    filename = ndb.StringProperty()
+    filename = ndb.StringProperty(required=True, default=PastyFile.DEFAULT_FILENAME)
     description = ndb.StringProperty()
     forked_from = ndb.KeyProperty(kind='Paste')
     files = ndb.LocalStructuredProperty(PastyFile, repeated=True)
@@ -140,7 +141,7 @@ class Paste(ndb.Model):
         # with 'path' being the object name in Cloud Storage (minus the bucket).
 
         if not filename:
-            filename = u'untitled.txt'
+            filename = PastyFile.DEFAULT_FILENAME
 
         if not self.files:
             self.preview = utils.summarize_content(content, filename=filename)
