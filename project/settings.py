@@ -90,7 +90,6 @@ EMAIL_BACKEND = 'djangae.mail.AsyncEmailBackend'
 
 ALLOWED_HOSTS = ('*',)
 
-DEFAULT_FILE_STORAGE = 'djangae.storage.CloudStorage'
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
 FILE_UPLOAD_HANDLERS = (
     'django.core.files.uploadhandler.MemoryFileUploadHandler',

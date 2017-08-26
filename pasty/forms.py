@@ -25,10 +25,12 @@ class SearchForm(NoLabelSuffix, forms.Form):
 
 class AdminForm(NoLabelSuffix, forms.Form):
     _tasks = [
-        # (form value, form label, task func)
-        ('convert_peelings_task', u'Convert peelings to pastes', tasks.convert_peelings_task),
-        ('resave_pastes_task', u'Re-save pastes', tasks.resave_pastes_task),
+        # (form label, task func)
+        (u'Convert peelings to pastes', tasks.convert_peelings_task),
+        (u'Re-save pastes', tasks.resave_pastes_task),
     ]
+    _tasks = [(str(idx), label, func) for idx, (label, func) in enumerate(_tasks, 1)]
+
     _task_choices = [(value, label) for value, label, task in _tasks]
 
     tasks = forms.MultipleChoiceField(choices=_task_choices, widget=forms.CheckboxSelectMultiple)

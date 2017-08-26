@@ -9,7 +9,7 @@ from google.appengine.ext import deferred
 from .models import Paste
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 paste_index = search.Index(name='pastes')
 
 
@@ -62,6 +62,7 @@ class SearchResults(list):
 
         for doc in results:
             paste = Paste.get_by_id(int(doc.doc_id))
+
             if paste:
                 pastes.append(paste)
             else:
@@ -73,6 +74,7 @@ class SearchResults(list):
 
         # And schedule those search docs for deletion.
         if bad_docs:
+            logger.debug('Bogus search results %r', bad_docs)
             deferred.defer(delete_docs_from_index, bad_docs, _queue='delete-docs')
 
     def has_next(self):
@@ -120,12 +122,12 @@ def build_query(qdict):
 
 def delete_docs_from_index(doc_ids):
     """Delete documents from the search index. doc_ids is a list of strings."""
-    log.info('delete_docs_from_index(%r)', doc_ids)
+    logger.debug('delete_docs_from_index(%r)', doc_ids)
 
     try:
         paste_index.delete(doc_ids)
     except (search.DeleteError, ValueError):
-        log.exception('Error deleting stale search results.')
+        logger.exception('Error deleting stale search results.')
 
 
 def index_directory(path):
