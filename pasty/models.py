@@ -14,6 +14,28 @@ BUCKET_KEY = 'CLOUD_STORAGE_BUCKET'
 language_choices = [(name, name) for name in utils.get_language_names()]
 
 
+class LexerConfig(ndb.Model):
+    """Global config for customising what highlighting to use per file type."""
+    class mapping(ndb.Model):
+        extension = ndb.StringProperty(required=True)
+        language = ndb.StringProperty(required=True)
+
+    lexers = ndb.LocalStructuredProperty(mapping, repeated=True)
+
+    @classmethod
+    def get(cls):
+        """Singleton method to get/create the configuration objects."""
+        return cls.get_or_insert('config', lexers=[])
+
+    @classmethod
+    def get_config(cls):
+        """Singleton method to get a map of extensions to languages."""
+        config = cls.get()
+        mapping = {obj.extension: obj.language for obj in config.lexers}
+
+        return mapping
+
+
 def make_name_for_storage(paste, filename):
     """Returns a name for an object in Cloud Storage (without a bucket)."""
     # Like 'pasty/2016/03/01/1234567890/setup.py'.
@@ -41,7 +63,8 @@ class PastyFile(ndb.Model):
         with self.open('r') as fh:
             text = fh.read()
 
-        markup = utils.highlight_content(text, filename=self.filename)
+        config = LexerConfig.get_config()
+        markup = utils.highlight_content(text, filename=self.filename, config=config)
 
         return safestring.mark_safe(markup)
 
@@ -144,7 +167,8 @@ class Paste(ndb.Model):
             filename = PastyFile.DEFAULT_FILENAME
 
         if not self.files:
-            self.preview = utils.summarize_content(content, filename=filename)
+            config = LexerConfig.get_config()
+            self.preview = utils.summarize_content(content, filename=filename, config=config)
             self.filename = filename
 
         pasty_file = PastyFile.from_content(

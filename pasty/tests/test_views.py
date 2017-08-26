@@ -5,7 +5,7 @@ import unittest
 from django.core.urlresolvers import reverse
 
 from . import AppEngineTestCase, freeze_time
-from pasty.models import Paste, Star, get_starred_pastes
+from pasty.models import LexerConfig, Paste, Star, get_starred_pastes
 from pasty import index
 from pasty import utils
 
@@ -587,3 +587,33 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                 u'url': u'/1/',
             },
         )
+
+
+class AdminLexersTestCase(AppEngineTestCase):
+    def test_shows_form(self):
+        url = reverse('admin_lexers')
+        self.login('alice@example.com', is_admin=True)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_new_lexer_mapping(self):
+        url = reverse('admin_lexers')
+        self.login('alice@example.com', is_admin=True)
+
+        self.assertEqual(LexerConfig.get_config(), {})
+
+        data = {
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-language': 'AppleScript',
+            'form-0-extension': 'script',
+        }
+
+        response = self.client.post(url, data)
+
+        self.assertRedirects(response, url)
+        self.assertEqual(LexerConfig.get_config(), {'script': 'AppleScript'})

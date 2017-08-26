@@ -13,8 +13,8 @@ from google.appengine.ext import ndb
 from . import index
 from . import utils
 from . import validators
-from .forms import AdminForm, PasteForm
-from .models import Paste, Star, get_starred_pastes
+from .forms import AdminForm, AdminLexersFormSet, PasteForm
+from .models import LexerConfig, Paste, Star, get_starred_pastes
 
 
 def home(request):
@@ -335,3 +335,28 @@ def admin(request):
         'page_title': u'Administration things',
     }
     return render(request, 'pasty/admin.html', context)
+
+
+@utils.admin_required
+def admin_lexers(request):
+    """Form to configure lexers for file extensions."""
+    formset = AdminLexersFormSet.for_config()
+    config = LexerConfig.get()
+
+    if request.method == 'POST':
+        formset = AdminLexersFormSet.for_config(request.POST)
+
+        if formset.is_valid():
+            formset.save()
+            messages.success(request, u'Saved configuration')
+
+            return redirect('admin_lexers')
+
+    context = {
+        'formset': formset,
+        'section': admin,
+        'page_title': u'Configure highlighting',
+    }
+
+    return render(request, 'pasty/admin_lexers.html', context)
+

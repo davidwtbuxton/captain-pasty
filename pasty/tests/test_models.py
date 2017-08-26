@@ -3,7 +3,7 @@ import datetime
 from django.http import Http404
 
 from . import AppEngineTestCase
-from pasty.models import Paste, PastyFile
+from pasty.models import LexerConfig, Paste, PastyFile
 
 
 class PasteTestCase(AppEngineTestCase):
@@ -70,6 +70,36 @@ class PasteTestCase(AppEngineTestCase):
             },
         )
 
+    def test_highlight_content_with_custom_lexer_config(self):
+        config = LexerConfig.get()
+        config.lexers = [{'extension': 'sass', 'language': 'CSS'}]
+        config.put()
+
+        paste = Paste(filename='example.sass')
+        paste.put()
+
+        sass_content = 'body { font-family: serif; }'
+        # Same content, but different filenames.
+        paste.save_content(sass_content, filename='example.sass')
+        paste.save_content(sass_content, filename='example.txt')
+
+        css_expected = (
+            u'<div class="highlight highlight__autumn"><pre><span></span>'
+            u'<span class="nt">body</span> <span class="p">{</span>'
+            u' <span class="nb">font-family</span><span class="o">:</span>'
+            u' <span class="nb">serif</span><span class="p">;</span>'
+            u' <span class="p">}</span>\n</pre></div>\n'
+        )
+        txt_expected = (
+            u'<div class="highlight highlight__autumn"><pre><span></span>'
+            u'body { font-family: serif; }\n</pre></div>\n'
+        )
+
+        self.assertEqual(paste.preview, css_expected)
+        # The sass file was highlighted as CSS.
+        self.assertEqual(paste.files[0].content_highlight(), css_expected)
+        self.assertEqual(paste.files[1].content_highlight(), txt_expected)
+
 
 class PastyFileTestCase(AppEngineTestCase):
     def test_default_content_type(self):
@@ -81,3 +111,21 @@ class PastyFileTestCase(AppEngineTestCase):
         obj = PastyFile(filename='example.jpg')
 
         self.assertEqual(obj.content_type, 'image/jpeg')
+
+
+class LexerConfigTestCase(AppEngineTestCase):
+    def test_get_singleton(self):
+        config = LexerConfig.get()
+
+        self.assertEqual(config.lexers, [])
+        self.assertEqual(config.key.id(), 'config')
+
+    def test_adding_config(self):
+        config = LexerConfig.get()
+
+        m = LexerConfig.mapping(extension='foo', language='FooLang')
+        config.lexers.append(m)
+        config.put()
+
+        config = LexerConfig.get()
+        self.assertEqual(config.lexers, [m])

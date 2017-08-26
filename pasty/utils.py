@@ -41,7 +41,11 @@ def get_language_names():
     return names
 
 
-def choose_lexer(content, language=None, filename=None):
+def choose_lexer(content, language=None, filename=None, config=None):
+    """Returns a Pygments lexer.
+
+    config is a mapping of extensions to lexer names, {'.foo': 'FooLang'}
+    """
     lexer = None
 
     if language:
@@ -52,10 +56,18 @@ def choose_lexer(content, language=None, filename=None):
 
     if filename:
         _, ext = os.path.splitext(filename.lower())
+        no_dot_ext = ext.lstrip('.')
 
-        if ext == '.txt':
+        if config and (no_dot_ext in config):
+            try:
+                lexer = lexers.get_lexer_by_name(config[no_dot_ext])
+            except ClassNotFound:
+                pass
+
+        elif ext == '.txt':
             # Else we get the ResourceLexer, which is not useful.
             lexer = lexers.get_lexer_by_name('text')
+
         else:
             try:
                 lexer = lexers.get_lexer_for_filename(filename)
@@ -73,11 +85,11 @@ def choose_lexer(content, language=None, filename=None):
     return lexer
 
 
-def highlight_content(content, language=None, filename=None):
+def highlight_content(content, language=None, filename=None, config=None):
     """Applies code highlighting and returns the markup. If language or filename
     is None then the language is guessed from the content.
     """
-    lexer = choose_lexer(content, language=language, filename=filename)
+    lexer = choose_lexer(content, language=language, filename=filename, config=config)
 
     style_class = highlight_css[PYGMENTS_STYLE][0]
     cssclass = 'highlight ' + style_class
@@ -87,14 +99,14 @@ def highlight_content(content, language=None, filename=None):
     return highlighted
 
 
-def summarize_content(content, language=None, filename=None):
+def summarize_content(content, **kwargs):
     """Returns a summary of the content, with syntax highlighting."""
     lines = 10
     max_summary_size = 10 * 256
     content = content[:max_summary_size]
 
     summary = u'\n'.join(content.strip().splitlines()[:lines]).strip()
-    summary = highlight_content(summary, language=language)
+    summary = highlight_content(summary, **kwargs)
 
     return summary
 
