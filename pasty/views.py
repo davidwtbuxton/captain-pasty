@@ -359,4 +359,3 @@ def admin_lexers(request):
     }
 
     return render(request, 'pasty/admin_lexers.html', context)
-

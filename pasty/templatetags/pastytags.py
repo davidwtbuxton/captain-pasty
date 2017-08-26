@@ -31,6 +31,8 @@ def _since(dt, moment):
     """Returns the time since for a date, like '1 year' or '12 hours'."""
     one_day = 3600 * 24
 
+    # Bit silly having months and years since the filter is hard-coded to only
+    # use this for datetimes less than 2 days old.
     periods = [
         (one_day * 365, u'year', u'years'),
         (one_day * 28, u'month', u'months'),
@@ -41,9 +43,10 @@ def _since(dt, moment):
     ]
 
     delta = moment - dt
+    delta_seconds = delta.total_seconds()
 
     for period, singular, plural in periods:
-        num = delta.seconds // period
+        num =  delta_seconds // period
 
         if num:
             form = singular if num == 1 else plural
@@ -58,12 +61,12 @@ def since(dt, arg=None):
     moment = datetime.datetime.utcnow()
     delta = datetime.timedelta(days=2)
 
-    # Only do fancy things if it's older than delta.
+    # Only do fancy things if it's younger than delta.
     if (moment - dt) < delta:
         return _since(dt, moment) + u' ago'
 
     else:
-        return defaultfilters.date(dt, arg)
+        return defaultfilters.date(dt, arg=arg)
 
 
 @register.simple_tag

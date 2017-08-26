@@ -28,7 +28,10 @@ class AppEngineTestCase(TestCase):
         self.testbed.init_user_stub()
         self.testbed.init_search_stub()
 
-        ndb.get_context().clear_cache()
+        ndb_context = ndb.get_context()
+        ndb_context.clear_cache()
+        ndb_context.set_cache_policy(False)
+        ndb_context.set_memcache_policy(False)
 
     def tearDown(self):
         self.testbed.deactivate()
