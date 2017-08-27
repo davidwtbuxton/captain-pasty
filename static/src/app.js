@@ -1,6 +1,23 @@
 $(document).ready(function() {
 	'use strict';
 
+	/* Copied from https://davidwalsh.name/javascript-debounce-function */
+	function debounce(func, wait, immediate) {
+		var timeout;
+
+		return function() {
+			var context = this, args = arguments;
+			var later = function() {
+				timeout = null;
+				if (!immediate) func.apply(context, args);
+			};
+			var callNow = immediate && !timeout;
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+			if (callNow) func.apply(context, args);
+		};
+	}
+
 
 	/* Starring and un-starring pastes. */
 	function starPaste() {
@@ -27,10 +44,21 @@ $(document).ready(function() {
 					$('.star__action .fa').addClass('fa-star').removeClass('fa-star-o');
 				}
 
-				updateStarList();
+				updateStarListDebounced();
 			}
 		});
 	}
+
+	function buildStarItem(obj, idx) {
+		var markup = '<li class="stars__summary"><a href="{{ url }}">{{ author }} / {{ filename }}</a></li>';
+		markup = markup
+			.replace('{{ url }}', obj.url)
+			.replace('{{ author }}', obj.author || 'anonymous')
+			.replace('{{ filename }}', obj.filename);
+
+		return $(markup);
+	}
+
 
 	function updateStarList() {
 		var $listEl = $('.stars__list'),
@@ -39,11 +67,15 @@ $(document).ready(function() {
 		$.get({
 			url: urlList,
 			success: function(data) {
-
-
+				var itemElements = $.map(data.stars, buildStarItem);
+				$listEl.empty().append(itemElements);
 			}
 		});
 	}
+
+
+	var updateStarListDebounced = debounce(updateStarList, 250);
+
 
 	$('.star__action').click(starPaste);
 
