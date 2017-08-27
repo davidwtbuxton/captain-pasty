@@ -8,8 +8,8 @@
 
 		{% if terms %}
 			<span class="search-tags">
-			{% for tag, label in terms %}
-				<a class="search-tags__tag tag is-small" href="?{{ tag }}">{{ label }}
+			{% for tag, label, param in terms %}
+				<a class="search-tags__tag tag is-small" href="?{{ param }}">{{ label }}
 					<span class="icon is-small" aria-hidden="true">
 						<i class="fa fa-arrow-circle-right"></i>
 					</span>

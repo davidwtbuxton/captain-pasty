@@ -97,21 +97,4 @@ $(document).ready(function() {
 			});
 		});
 
-
-	/* Show / hide the advanced search form. */
-	function hideAdvancedSearch(evt) {
-		if (! $(evt.target).parents('.search').length) {
-			$('.advanced-search').addClass('hidden');
-			$(document).off('click', hideAdvancedSearch);
-		}
-	}
-
-	function showAdvancedSearch() {
-		$('.advanced-search').removeClass('hidden');
-		// Make sure we don't bind it more than once.
-		$(document).off('click', hideAdvancedSearch);
-		$(document).on('click', hideAdvancedSearch);
-	}
-
-	// $('.search').on('focus', 'input', showAdvancedSearch);
 });

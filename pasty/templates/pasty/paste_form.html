@@ -7,23 +7,24 @@
 <form method="post" class="paste-form">
 	{% csrf_token %}
 
-	<div class="control">
+	<div class="field">
 		{% render_label form.description class='label' %}
-		{% render_input form.description class='input' placeholder='Description…' %}
+		<div class="control">
+			{% render_input form.description class='input' placeholder='Description…' %}
+		</div>
 	</div>
 
-	<div class="control paste-form__file-group">
+	<div class="field paste-form__file-group">
+		{% render_label form.filename class='label' %}
 		<div class="control">
-			{% render_label form.filename class='label' %}
 			{% render_input form.filename class='input paste-form__filename' placeholder='Filename including extension…' %}
 		</div>
-
 		<div class="control">
 			{% render_input form.content class='textarea paste-form__content' placeholder='Paste / drop your content here…' %}
 		</div>
 	</div>
 
-	<div class="control">
+	<div class="field">
 		<span class="button is-medium paste-form__add-file">Add file</span>
 		<button type="submit" class="button is-primary is-medium">Create paste</button>
 	</div>

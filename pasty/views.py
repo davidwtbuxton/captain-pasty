@@ -31,9 +31,9 @@ def paste_list(request):
     """
     page = request.GET.get('p')
     terms = index.build_query(request.GET)
-    query = u' '.join(term for term, label in terms).encode('utf-8')
+    query = u' '.join(term for term, label, param in terms).encode('utf-8')
     pastes = index.search_pastes(query, page)
-    tags = [label for term, label in terms]
+    tags = [label for term, label, param in terms]
     page_title = u'Pastes ' + u', '.join(tags)
 
     context = {
@@ -246,7 +246,7 @@ def api_paste_list(request):
 
     page = request.GET.get('p')
     terms = index.build_query(request.GET)
-    query = u' '.join(term for term, label in terms).encode('utf-8')
+    query = u' '.join(term for term, label, param in terms).encode('utf-8')
     pastes = index.search_pastes(query, page)
 
     if pastes.has_next():

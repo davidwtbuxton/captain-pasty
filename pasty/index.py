@@ -3,6 +3,7 @@ import logging
 import os
 
 from django.conf import settings
+from django.utils import http
 from google.appengine.api import search
 from google.appengine.ext import deferred
 
@@ -99,7 +100,7 @@ def search_pastes(query, cursor_string, limit=None):
 
 
 def build_query(qdict):
-    """Returns a list of (term, label) pairs from search params."""
+    """Returns a list of (term, label, param) tuples from search params."""
     terms = []
 
     # Maps query parameters to a function which returns a pair of (term, label).
@@ -114,8 +115,9 @@ def build_query(qdict):
         value = qdict.get(name)
 
         if value:
+            param = http.urlencode({name: value})
             term, label = params[name](value)
-            terms.append((term, label))
+            terms.append((term, label, param))
 
     return terms
 
