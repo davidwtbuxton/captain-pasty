@@ -1,9 +1,11 @@
 import mimetypes
+import os.path
 
 import cloudstorage
 from django.http import Http404
 from django.urls import reverse
 from django.utils import safestring
+from django.utils import text
 from django.utils import timezone
 from google.appengine.api import app_identity
 from google.appengine.ext import ndb
@@ -41,6 +43,9 @@ def make_name_for_storage(paste, filename):
     # Like 'pasty/2016/03/01/1234567890/1-setup.py'.
     n = len(paste.files) + 1
     dt = timezone.now()
+    filename = os.path.normpath(filename)
+    filename = text.get_valid_filename(filename)
+
     template = u'pasty/{dt:%Y/%m/%d}/{id}/{n}-{filename}'
     name = template.format(dt=dt, id=paste.key.id(), n=n, filename=filename)
     # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
