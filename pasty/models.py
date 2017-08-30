@@ -38,11 +38,11 @@ class LexerConfig(ndb.Model):
 
 def make_name_for_storage(paste, filename):
     """Returns a name for an object in Cloud Storage (without a bucket)."""
-    # Like 'pasty/2016/03/01/1234567890/setup.py'.
-    # BUG!!!! Need to handle 2 files with the same name for 1 paste.
+    # Like 'pasty/2016/03/01/1234567890/1-setup.py'.
+    n = len(paste.files) + 1
     dt = timezone.now()
-    template = u'pasty/{dt:%Y/%m/%d}/{id}/{filename}'
-    name = template.format(dt=dt, id=paste.key.id(), filename=filename)
+    template = u'pasty/{dt:%Y/%m/%d}/{id}/{n}-{filename}'
+    name = template.format(dt=dt, id=paste.key.id(), n=n, filename=filename)
     # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
     name = name.encode('utf-8')
 

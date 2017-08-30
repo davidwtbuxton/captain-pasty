@@ -186,7 +186,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'created': datetime.datetime(2016, 12, 25),
                         'filename': 'example.txt',
                         'num_lines': 1,
-                        'path': 'pasty/2016/12/25/1/example.txt',
+                        'path': 'pasty/2016/12/25/1/1-example.txt',
                     },
                 ],
                 'forked_from': None,
@@ -233,7 +233,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'created': datetime.datetime(2016, 12, 25),
                         'filename': 'untitled.txt',
                         'num_lines': 1,
-                        'path': u'pasty/2016/12/25/1/untitled.txt',
+                        'path': u'pasty/2016/12/25/1/1-untitled.txt',
                     },
                 ],
                 'forked_from': None,
@@ -243,6 +243,59 @@ class PasteCreateTestCase(AppEngineTestCase):
                 'preview': (
                     '<div class="highlight highlight__autumn">'
                     '<pre><span></span>foo bar baz\n</pre></div>\n'
+                ),
+                'url': '/1/',
+            },
+        )
+
+    def test_create_new_paste_with_duplicate_filenames(self):
+        self.assertIsNone(Paste.get_by_id(1))
+
+        data = {
+            'description': 'Foo',
+            'filename': ['example.txt', 'example.txt'],
+            'content': ['foo', 'bar'],
+        }
+
+        url = reverse('paste_create')
+        with freeze_time('2016-12-25'):
+            response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/1/')
+
+        paste = Paste.get_by_id(1)
+
+        self.assertEqual(
+            paste.to_dict(),
+            {
+                'author': u'',
+                'created': datetime.datetime(2016, 12, 25),
+                'description': 'Foo',
+                'filename': 'example.txt',
+                'files': [
+                    {
+                        'content_type': 'text/plain',
+                        'created': datetime.datetime(2016, 12, 25),
+                        'filename': 'example.txt',
+                        'num_lines': 1,
+                        'path': 'pasty/2016/12/25/1/1-example.txt',
+                    },
+                    {
+                        'content_type': 'text/plain',
+                        'created': datetime.datetime(2016, 12, 25),
+                        'filename': 'example.txt',
+                        'num_lines': 1,
+                        'path': 'pasty/2016/12/25/1/2-example.txt',
+                    },
+                ],
+                'forked_from': None,
+                'id': 1,
+                'num_files': 2,
+                'num_lines': 2,
+                'preview': (
+                    '<div class="highlight highlight__autumn">'
+                    '<pre><span></span>foo\n</pre></div>\n'
                 ),
                 'url': '/1/',
             },
@@ -463,7 +516,7 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                     u'created': u'2016-12-25T00:00:00',
                     u'filename': u'example.txt',
                     u'num_lines': 1,
-                    u'path': u'pasty/2016/12/25/1234/example.txt',
+                    u'path': u'pasty/2016/12/25/1234/1-example.txt',
                 }],
                 u'forked_from': None,
                 u'id': 1234,
@@ -576,7 +629,7 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                     u'created': u'2016-12-25T00:00:00',
                     u'filename': u'example.txt',
                     u'num_lines': 1,
-                    u'path': u'pasty/2016/12/25/1/example.txt',
+                    u'path': u'pasty/2016/12/25/1/1-example.txt',
                 }],
                 u'forked_from': None,
                 u'id': 1,
