@@ -22,7 +22,7 @@ class ReformTestCase(TestCase):
         context = Context({'form': TestForm()})
 
         result = template.render(context)
-        expected = u'<input class="foo" id="id_name" name="name" type="text" required />'
+        expected = u'<input type="text" name="name" required class="foo" id="id_name" />'
 
         self.assertEqual(result, expected)
 

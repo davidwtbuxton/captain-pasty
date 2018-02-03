@@ -4,3 +4,4 @@ pbr==1.10.0
 six==1.10.0
 freezegun==0.3.7
 python-dateutil==2.5.3
+pytz
