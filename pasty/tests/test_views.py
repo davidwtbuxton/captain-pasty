@@ -5,7 +5,7 @@ import unittest
 from django.core.urlresolvers import reverse
 
 from . import AppEngineTestCase, freeze_time
-from pasty.models import LexerConfig, Paste, Star, get_starred_pastes
+from pasty.models import LexerConfig, Paste, get_starred_pastes
 from pasty import index
 from pasty import utils
 
@@ -22,9 +22,9 @@ class PasteHomeTestCase(AppEngineTestCase):
 class PasteListTestCase(AppEngineTestCase):
     def test_shows_list_of_pastes(self):
         for n in range(11):
-            paste = Paste()
-            paste.put()
-            paste.save_content('foo %s' % n, filename='example-%s.txt' % n)
+            fname = 'example-%s.txt' % n
+            fcontent = 'foo %s' % n
+            paste = Paste.create_with_files(files=[(fname, fcontent)])
             index.add_paste(paste)
 
         url = reverse('paste_list')
@@ -41,9 +41,7 @@ class PasteListTestCase(AppEngineTestCase):
 
 class PasteDetailTestCase(AppEngineTestCase):
     def test_shows_detail_for_paste(self):
-        paste = Paste(id=1234, filename='example.txt')
-        paste.put()
-        paste.save_content('foo', filename='example.txt')
+        paste = Paste.create_with_files(id=1234, files=[('example.txt', 'foo')])
 
         url = reverse('paste_detail', args=[paste.key.id()])
         response = self.client.get(url)
@@ -59,9 +57,7 @@ class PasteDetailTestCase(AppEngineTestCase):
         )
 
     def test_shows_detail_for_paste_without_filename_or_description(self):
-        paste = Paste(id=1234, filename='')
-        paste.put()
-        paste.save_content('foo bar baz', filename='')
+        paste = Paste.create_with_files(id=1234, files=[('', 'foo bar baz')])
 
         url = reverse('paste_detail', args=[paste.key.id()])
         response = self.client.get(url)
@@ -83,9 +79,7 @@ class PasteRedirectTestCase(AppEngineTestCase):
 
 class PasteDownloadTestCase(AppEngineTestCase):
     def test_download_paste_files_as_zip(self):
-        paste = Paste(id=1234)
-        paste.put()
-        paste.save_content('foo', filename='example.txt')
+        paste = Paste.create_with_files(id=1234, files=[('example.txt', 'foo')])
 
         url = reverse('paste_download', args=[paste.key.id()])
         response = self.client.get(url)
@@ -97,9 +91,7 @@ class PasteDownloadTestCase(AppEngineTestCase):
 
 class PasteRawTestCase(AppEngineTestCase):
     def test_serves_raw_file(self):
-        paste = Paste()
-        paste.put()
-        paste.save_content('example', filename='image.jpg')
+        paste = Paste.create_with_files(files=[('image.jpg', 'example')])
 
         url = reverse('paste_raw', args=[paste.key.id(), 'image.jpg'])
         response = self.client.get(url)
@@ -108,9 +100,7 @@ class PasteRawTestCase(AppEngineTestCase):
         self.assertEqual(response['Content-type'], 'image/jpeg')
 
     def test_returns_404_for_bogus_filename(self):
-        paste = Paste()
-        paste.put()
-        paste.save_content('example', filename='image.jpg')
+        paste = Paste.create_with_files(files=[('image.jpg', 'example')])
 
         url = reverse('paste_raw', args=[paste.key.id(), 'bogus.jpg'])
         response = self.client.get(url)
@@ -119,6 +109,8 @@ class PasteRawTestCase(AppEngineTestCase):
 
 
 class PasteCreateTestCase(AppEngineTestCase):
+    maxDiff = None
+
     def test_shows_empty_form_on_get(self):
         url = reverse('paste_create')
         response = self.client.get(url)
@@ -132,9 +124,8 @@ class PasteCreateTestCase(AppEngineTestCase):
         self.assertEqual(response.context_data['section'], 'paste_create')
 
     def test_forking_from_paste_pre_fills_form(self):
-        paste = Paste(id=1234, description='Foo')
-        paste.put()
-        paste.save_content('foo bar baz', filename='example.txt')
+        files = [('example.txt', 'foo bar baz')]
+        paste = Paste.create_with_files(id=1234, description='Foo', files=files)
 
         url = reverse('paste_create')
         response = self.client.get(url, {'fork': paste.key.id()})
@@ -189,7 +180,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'path': 'pasty/2016/12/25/1/1/example.txt',
                     },
                 ],
-                'forked_from': None,
+                'fork': None,
                 'id': 1,
                 'num_files': 1,
                 'num_lines': 1,
@@ -236,7 +227,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'path': u'pasty/2016/12/25/1/1/untitled.txt',
                     },
                 ],
-                'forked_from': None,
+                'fork': None,
                 'id': 1,
                 'num_files': 1,
                 'num_lines': 1,
@@ -289,7 +280,7 @@ class PasteCreateTestCase(AppEngineTestCase):
                         'path': 'pasty/2016/12/25/1/2/example.txt',
                     },
                 ],
-                'forked_from': None,
+                'fork': None,
                 'id': 1,
                 'num_files': 2,
                 'num_lines': 2,
@@ -333,7 +324,7 @@ class ApiStarListTestCase(AppEngineTestCase):
 
         paste = Paste(id=1234, created=datetime.datetime(2016, 12, 25))
         paste.put()
-        starred = paste.create_star_for_author(user_email)
+        paste.create_star_for_author(user_email)
 
         url = reverse('api_star_list')
 
@@ -353,7 +344,7 @@ class ApiStarListTestCase(AppEngineTestCase):
                         u'description': None,
                         u'filename': 'untitled.txt',
                         u'files': [],
-                        u'forked_from': None,
+                        u'fork': None,
                         u'id': 1234,
                         u'num_files': 0,
                         u'num_lines': 0,
@@ -493,9 +484,8 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
         xmas = datetime.datetime(2016, 12, 25)
 
         with freeze_time('2016-12-25'):
-            paste = Paste(id=1234, created=xmas)
-            paste.put()
-            paste.save_content('foo', 'example.txt')
+            files = [('example.txt', 'foo')]
+            paste = Paste.create_with_files(id=1234, created=xmas, files=files)
 
         url = reverse('api_paste_detail', args=(paste.key.id(),))
 
@@ -518,7 +508,7 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                     u'num_lines': 1,
                     u'path': u'pasty/2016/12/25/1234/1/example.txt',
                 }],
-                u'forked_from': None,
+                u'fork': None,
                 u'id': 1234,
                 u'num_files': 1,
                 u'num_lines': 1,
@@ -631,7 +621,7 @@ class ApiPasteCreateTestCase(AppEngineTestCase):
                     u'num_lines': 1,
                     u'path': u'pasty/2016/12/25/1/1/example.txt',
                 }],
-                u'forked_from': None,
+                u'fork': None,
                 u'id': 1,
                 u'num_lines': 1,
                 u'num_files': 1,

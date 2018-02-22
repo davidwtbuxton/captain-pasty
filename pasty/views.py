@@ -14,7 +14,7 @@ from . import index
 from . import utils
 from . import validators
 from .forms import AdminForm, AdminLexersFormSet, PasteForm
-from .models import LexerConfig, Paste, Star, get_starred_pastes
+from .models import Paste, Star, get_starred_pastes
 
 
 def home(request):
@@ -111,36 +111,33 @@ def paste_create(request):
     Paste's contents.
     """
     fork_id = request.GET.get('fork')
-    forked_from = Paste.get_by_id(int(fork_id)) if fork_id else None
+    fork = Paste.get_by_id(int(fork_id)) if fork_id else None
 
     if request.method == 'POST':
         form = PasteForm(request.POST)
 
         if form.is_valid():
-            forked_key = forked_from.key if forked_from else None
-
-            paste = Paste(author=request.user_email, forked_from=forked_key)
-            paste.description = form.cleaned_data['description']
-            paste.put()
-
+            author = request.user_email
+            description = form.cleaned_data['description']
             filename_list = request.POST.getlist('filename')
             content_list = request.POST.getlist('content')
+            files = zip(filename_list, content_list)
 
-            for name, content in zip(filename_list, content_list):
-                paste.save_content(content, filename=name)
+            paste = Paste.create_with_files(
+                author=author, fork=fork, description=description, files=files)
 
             # Update the search index.
             index.add_paste(paste)
 
             return redirect('paste_detail', paste.key.id())
     else:
-        if forked_from:
-            with forked_from.files[0].open() as fh:
+        if fork:
+            with fork.files[0].open() as fh:
                 content = fh.read()
 
             initial = {
-                'filename': forked_from.filename,
-                'description': forked_from.description,
+                'filename': fork.filename,
+                'description': fork.description,
                 'content': content,
             }
         else:
@@ -297,14 +294,10 @@ def api_paste_create(request):
 
         return JsonResponse(result, status=400)
 
-    first_file = data['files'][0]
-    paste = Paste(
-        author=request.user_email,
-        description=data['description'],
-        filename=first_file['filename'],
-    )
-    paste.put()
-    paste.save_content(first_file['content'], filename=first_file['filename'])
+    files = [(f['filename'], f['content']) for f in data['files']]
+    paste = Paste.create_with_files(
+        author=request.user_email, description=data['description'], files=files)
+
     index.add_paste(paste)
 
     result = paste.to_dict()
@@ -341,7 +334,6 @@ def admin(request):
 def admin_lexers(request):
     """Form to configure lexers for file extensions."""
     formset = AdminLexersFormSet.for_config()
-    config = LexerConfig.get()
 
     if request.method == 'POST':
         formset = AdminLexersFormSet.for_config(request.POST)

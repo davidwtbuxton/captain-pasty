@@ -38,16 +38,14 @@ class LexerConfig(ndb.Model):
         return mapping
 
 
-def make_name_for_storage(paste, filename):
+def make_name_for_storage(paste_id, filename, n, dt):
     """Returns a name for an object in Cloud Storage (without a bucket)."""
     # Like 'pasty/2016/03/01/1234567890/1-setup.py'.
-    n = len(paste.files) + 1
-    dt = timezone.now()
     filename = os.path.normpath(filename)
     filename = text.get_valid_filename(filename)
 
     template = u'pasty/{dt:%Y/%m/%d}/{id}/{n}/{filename}'
-    name = template.format(dt=dt, id=paste.key.id(), n=n, filename=filename)
+    name = template.format(dt=dt, id=paste_id, n=n, filename=filename)
     # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
     name = name.encode('utf-8')
 
@@ -69,7 +67,7 @@ class PastyFile(ndb.Model):
             text = fh.read()
 
         config = LexerConfig.get_config()
-        markup = utils.highlight_content(text, filename=self.filename, config=config)
+        _, markup = utils.highlight_content(text, filename=self.filename, config=config)
 
         return safestring.mark_safe(markup)
 
@@ -79,20 +77,17 @@ class PastyFile(ndb.Model):
         return '/%s/%s' % (bucket, self.path)
 
     @classmethod
-    def from_content(cls, paste, filename, content):
+    def create(cls, filename, content, path, num_lines):
         """Save the content to cloud storage and return a new PastyFile."""
-        num_lines = utils.count_lines(content)
-        path = make_name_for_storage(paste, filename)
-
         if isinstance(content, unicode):
             content = content.encode('utf-8')
 
-        obj = cls(filename=filename, path=path, num_lines=num_lines)
+        pfile = cls(filename=filename, path=path, num_lines=num_lines)
 
-        with obj.open('w') as fh:
+        with pfile.open('w') as fh:
             fh.write(content)
 
-        return obj
+        return pfile
 
     @ndb.ComputedProperty
     def content_type(self):
@@ -107,13 +102,12 @@ class PastyFile(ndb.Model):
         return cloudstorage.open(path, mode)
 
 
-
 class Paste(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     author = ndb.StringProperty()
     filename = ndb.StringProperty(required=True, default=PastyFile.DEFAULT_FILENAME)
     description = ndb.StringProperty()
-    forked_from = ndb.KeyProperty(kind='Paste')
+    fork = ndb.KeyProperty(kind='Paste')
     files = ndb.LocalStructuredProperty(PastyFile, repeated=True)
     preview = ndb.TextProperty()
 
@@ -121,6 +115,57 @@ class Paste(ndb.Model):
         author = self.author if self.author else u'anonymous'
 
         return u'%s / %s' % (author, self.filename)
+
+    @classmethod
+    def create_with_files(cls, files, **kwargs):
+        """Creates a new Paste and saves files in storage."""
+        fork = kwargs.get('fork')
+
+        if fork:
+            kwargs['fork'] = fork.key
+
+        # OK. We need to create the Paste, then we can save the files to storage
+        # (because the storage name includes the paste's ID), then we update
+        # the paste again with the saved files' information.
+        paste = Paste(**kwargs)
+        paste.put()
+
+        right_now = timezone.now()
+        paste_id = paste.key.id()
+        config = LexerConfig.get_config()
+
+        # files is a sequence of (filename, content) pairs. But filename can
+        # be '', in which case we choose a name based on the content's format
+        # (e.g. if it looks like CSS, we choose 'untitled.css').
+        for n, filename_content in enumerate(files, 1):
+            filename, content = filename_content
+
+            # If no filename, we pick one.
+            if not filename:
+                lexer = utils.choose_lexer(content)
+                ext = utils.ext_for_lexer(lexer)
+                filename = PastyFile.DEFAULT_FILENAME.replace('.txt', ext)
+
+            num_lines = utils.count_lines(content)
+            path = make_name_for_storage(paste_id, filename, n, right_now)
+
+            pfile = PastyFile.create(
+                filename=filename, content=content, path=path, num_lines=num_lines)
+            paste.files.append(pfile)
+
+        if files:
+            # The first file is used to set the paste's own filename and
+            # preview.
+            fname = paste.files[0].filename
+            _, content = files[0]
+            _, preview = utils.summarize_content(content, filename=fname, config=config)
+            paste.preview = preview
+            paste.filename = fname
+
+        paste.put()
+
+        return paste
+
 
     @classmethod
     def get_or_404(cls, paste_id):
@@ -157,34 +202,10 @@ class Paste(ndb.Model):
         obj['id'] = self.key.id()
         obj['url'] = self.url
 
-        if obj['forked_from']:
-            obj['forked_from'] = obj['forked_from'].id()
+        if obj['fork']:
+            obj['fork'] = obj['fork'].id()
 
         return obj
-
-    def save_content(self, content, filename=None):
-        # File contents are stored in Cloud Storage. The first file is
-        # summarized and stored in the paste itself.  Paste.files is a list
-        # of dicts, where each dict has a key for 'filename', and 'path',
-        # with 'path' being the object name in Cloud Storage (minus the bucket).
-
-        if not filename:
-            filename = PastyFile.DEFAULT_FILENAME
-
-        if not self.files:
-            config = LexerConfig.get_config()
-            self.preview = utils.summarize_content(content, filename=filename, config=config)
-            self.filename = filename
-
-        pasty_file = PastyFile.from_content(
-            self,
-            filename=filename,
-            content=content,
-        )
-
-        self.files.append(pasty_file)
-
-        return self.put()
 
     def create_star_for_author(self, author):
         """Helper to get/create a Star for this paste."""

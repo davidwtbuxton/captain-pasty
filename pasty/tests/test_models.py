@@ -48,7 +48,7 @@ class PasteTestCase(AppEngineTestCase):
     def test_to_dict_for_forked_paste(self):
         xmas = datetime.datetime(2016, 12, 25)
         orig_key = Paste(id=1234, created=xmas).put()
-        fork = Paste(id=5678, created=xmas, forked_from=orig_key)
+        fork = Paste(id=5678, created=xmas, fork=orig_key)
         fork.put()
 
         result = fork.to_dict()
@@ -61,7 +61,7 @@ class PasteTestCase(AppEngineTestCase):
                 u'description': None,
                 u'filename': 'untitled.txt',
                 u'files': [],
-                u'forked_from': 1234,
+                u'fork': 1234,
                 u'id': 5678,
                 u'num_files': 0,
                 u'num_lines': 0,
@@ -75,13 +75,12 @@ class PasteTestCase(AppEngineTestCase):
         config.lexers = [{'extension': 'sass', 'language': 'CSS'}]
         config.put()
 
-        paste = Paste(filename='example.sass')
-        paste.put()
-
-        sass_content = 'body { font-family: serif; }'
         # Same content, but different filenames.
-        paste.save_content(sass_content, filename='example.sass')
-        paste.save_content(sass_content, filename='example.txt')
+        files = [
+            ('example.sass', 'body { font-family: serif; }'),
+            ('example.txt', 'body { font-family: serif; }'),
+        ]
+        paste = Paste.create_with_files(files=files)
 
         css_expected = (
             u'<div class="highlight highlight__autumn"><pre><span></span>'

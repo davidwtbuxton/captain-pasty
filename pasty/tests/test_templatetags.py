@@ -89,14 +89,6 @@ class SinceTestCase(TestCase):
 
         self.assertEqual(result, '59 minutes ago')
 
-    def test_less_than_an_hour_old(self):
-        new_years_eve = datetime.datetime(1999, 12, 31, 23, 1)
-
-        with freezegun.freeze_time('2000-01-01'):
-            result = pastytags.since(new_years_eve)
-
-        self.assertEqual(result, '59 minutes ago')
-
     def test_older_than_2_days(self):
         # Anything older than 2 days gets the regular date formatting.
         xmas = datetime.datetime(1999, 12, 25)

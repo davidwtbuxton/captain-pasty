@@ -1,7 +1,6 @@
 import os
 
 from djangae import environment
-# from djangae.settings_base import *
 
 from .boot import AppConfig
 
@@ -130,4 +129,5 @@ LOGGING = {
 # Allow anonymous users to post things.
 ANON_ALWAYS = True
 
-DJANGAE_RUNSERVER_IGNORED_DIR_REGEXES = [r'^libs$']
+DJANGAE_RUNSERVER_IGNORED_DIR_REGEXES = [r'^libs$', r'^google_appengine$']
+DJANGAE_RUNSERVER_IGNORED_FILES_REGEXES = ['^.+$(?<!\.py)(?<!\.yaml)(?<!\.html)']

@@ -18,6 +18,7 @@ paste_schema = {
                 'required': ['filename', 'content'],
             },
         },
+        'fork': {'type': 'string'},
     },
     'required': ['description', 'files'],
 }

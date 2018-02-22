@@ -41,18 +41,12 @@ def get_language_names():
     return names
 
 
-def choose_lexer(content, language=None, filename=None, config=None):
+def choose_lexer(content, filename=None, config=None):
     """Returns a Pygments lexer.
 
     config is a mapping of extensions to lexer names, {'.foo': 'FooLang'}
     """
     lexer = None
-
-    if language:
-        try:
-            lexer = lexers.get_lexer_by_name(language)
-        except ClassNotFound:
-            pass
 
     if filename:
         _, ext = os.path.splitext(filename.lower())
@@ -78,37 +72,54 @@ def choose_lexer(content, language=None, filename=None, config=None):
         try:
             lexer = lexers.guess_lexer(content)
         except ClassNotFound:
-            # No match by language or filename, and Pygments can't guess what
-            # it is. So let's treat it as plain text.
+            # No match by filename, and Pygments can't guess what it is.
+            # So let's treat it as plain text.
             lexer = lexers.get_lexer_by_name('text')
 
     return lexer
 
 
-def highlight_content(content, language=None, filename=None, config=None):
-    """Applies code highlighting and returns the markup. If language or filename
-    is None then the language is guessed from the content.
+def ext_for_lexer(lexer):
+    """Returns a filename extension (including a dot) for the Lexer."""
+    try:
+        pattern = lexer.filenames[0]
+    except IndexError:
+        pattern = '*.txt'
+
+    ext = pattern.lstrip('*')
+
+    return ext
+
+
+def highlight_content(content, filename=None, config=None):
+    """Chooses a lexer and applies code highlighting. If filename is None then
+    the language is guessed from the content.
+
+    Returns a pair of (lexer, content).
     """
-    lexer = choose_lexer(content, language=language, filename=filename, config=config)
+    lexer = choose_lexer(content, filename=filename, config=config)
 
     style_class = highlight_css[PYGMENTS_STYLE][0]
     cssclass = 'highlight ' + style_class
     formatter = formatters.HtmlFormatter(style=PYGMENTS_STYLE, cssclass=cssclass)
     highlighted = pygments.highlight(content, lexer, formatter)
 
-    return highlighted
+    return lexer, highlighted
 
 
 def summarize_content(content, **kwargs):
-    """Returns a summary of the content, with syntax highlighting."""
+    """Summarizes and adds code highlighting to text.
+
+    Returns a pair of (lexer, summary).
+    """
     lines = 10
     max_summary_size = 10 * 256
     content = content[:max_summary_size]
 
     summary = u'\n'.join(content.strip().splitlines()[:lines]).strip()
-    summary = highlight_content(summary, **kwargs)
+    lexer, summary = highlight_content(summary, **kwargs)
 
-    return summary
+    return lexer, summary
 
 
 def get_all_highlight_css():
