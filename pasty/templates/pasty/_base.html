@@ -58,13 +58,17 @@
 						Starred pastes
 					</h2>
 
-					<ul class="stars__list" data-url-list="{% url 'api_star_list' %}">
-					{% for paste in starred_pastes %}
-						<li class="stars__summary">
-							<a href="{% url 'paste_detail' paste.key.id %}">{{ paste }}</a>
-						</li>
-					{% endfor %}
-					</ul>
+					{% if starred_pastes %}
+						<ul class="stars__list" data-url-list="{% url 'api_star_list' %}">
+						{% for paste in starred_pastes %}
+							<li class="stars__summary">
+								<a href="{% url 'paste_detail' paste.key.id %}">{{ paste }}</a>
+							</li>
+						{% endfor %}
+						</ul>
+					{% else %}
+						<p class="stars__list">No starred pastes</p>
+					{% endif %}
 				</div>
 
 			</div>
