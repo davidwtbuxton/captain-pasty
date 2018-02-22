@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'djangae.contrib.processing.mapreduce',
+    'haystack',
     'pasty',
 ]
 
@@ -130,3 +131,10 @@ LOGGING = {
 
 # Allow anonymous users to post things.
 ANON_ALWAYS = True
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'appengine_haystack.AppEngineEngine',
+        'INDEX_NAME': 'haystack',
+    },
+}
