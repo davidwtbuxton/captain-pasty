@@ -130,3 +130,5 @@ LOGGING = {
 
 # Allow anonymous users to post things.
 ANON_ALWAYS = True
+
+DJANGAE_RUNSERVER_IGNORED_DIR_REGEXES = [r'^libs$']
