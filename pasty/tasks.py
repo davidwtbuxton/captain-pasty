@@ -52,7 +52,7 @@ def convert_peelings_task():
     dt = datetime.datetime.utcnow()
     name = 'convert-peelings {}'.format(dt)
     q = 'convert-peelings'
-    query = datastore.Query('Peeling')
+    query = datastore.Query('pastes_paste')
     mapper_library.start_mapping(name, query, convert_peeling, queue=q)
 
 
@@ -83,13 +83,6 @@ def convert_peeling(entity):
     forked_from = ndb.Key(Paste, data['fork_of_id']) if data['fork_of_id'] else None
     filename = make_peeling_filename(data)
 
-    obj = Paste(
-        id=paste_id,
-        author=None, # All peelings were anonymous.
-        created=data['created'],
-        filename='',
-        description=data['title'],
-        forked_from=forked_from,
-    )
-    obj.put()
-    obj.save_content(data['content'], filename=filename)
+    Paste.create_with_files(
+        files=[(filename, data['content'])], id=paste_id, created=data['created'],
+        author=None, description=data['title'], forked_from=forked_from)
