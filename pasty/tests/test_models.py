@@ -1,9 +1,10 @@
 import datetime
+import unittest
 
 from django.http import Http404
 
 from . import AppEngineTestCase
-from pasty.models import LexerConfig, Paste, PastyFile
+from pasty.models import LexerConfig, Paste, PastyFile, make_relative_path
 
 
 class PasteTestCase(AppEngineTestCase):
@@ -128,3 +129,14 @@ class LexerConfigTestCase(AppEngineTestCase):
 
         config = LexerConfig.get()
         self.assertEqual(config.lexers, [m])
+
+
+class MakeRelativePathTestCase(unittest.TestCase):
+    def test_valid_file_path(self):
+        result = make_relative_path('pasty/1999/1/1/123/1/foo.html')
+
+        self.assertEqual(result, '1/foo.html')
+
+    def test_invalid_file_path_error(self):
+        with self.assertRaisesRegexp(ValueError, 'Invalid file path'):
+            make_relative_path('pasty/1999/1/1/abc/1/foo.html')

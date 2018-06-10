@@ -1,5 +1,6 @@
 import mimetypes
 import os.path
+import re
 
 import cloudstorage
 from django.http import Http404
@@ -52,6 +53,20 @@ def make_name_for_storage(paste_id, filename, n, dt):
     return name
 
 
+def make_relative_path(path):
+    """Returns the path for a file, relative to the paste ID.
+
+    >>> make_relative_path('pasty/1999/12/31/123/1/foo.html')
+    '1/foo.html'
+    """
+    match = re.search(r'^pasty/\d{4}/\d{1,2}/\d{1,2}/\d+/(.*)', path)
+
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError('Invalid file path')
+
+
 class PastyFile(ndb.Model):
     DEFAULT_CONTENT_TYPE = 'text/plain'
     DEFAULT_FILENAME = u'untitled.txt'
@@ -59,6 +74,7 @@ class PastyFile(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
     filename = ndb.StringProperty(required=True)
     path = ndb.StringProperty()
+    relative_path = ndb.StringProperty()
     num_lines = ndb.IntegerProperty(default=0)
 
     def content_highlight(self):
@@ -77,12 +93,14 @@ class PastyFile(ndb.Model):
         return '/%s/%s' % (bucket, self.path)
 
     @classmethod
-    def create(cls, filename, content, path, num_lines):
+    def create(cls, filename, content, path, relative_path, num_lines):
         """Save the content to cloud storage and return a new PastyFile."""
         if isinstance(content, unicode):
             content = content.encode('utf-8')
 
-        pfile = cls(filename=filename, path=path, num_lines=num_lines)
+        pfile = cls(
+            filename=filename, path=path, relative_path=relative_path,
+            num_lines=num_lines)
 
         with pfile.open('w') as fh:
             fh.write(content)
@@ -148,9 +166,11 @@ class Paste(ndb.Model):
 
             num_lines = utils.count_lines(content)
             path = make_name_for_storage(paste_id, filename, n, right_now)
+            relative_path = make_relative_path(path)
 
             pfile = PastyFile.create(
-                filename=filename, content=content, path=path, num_lines=num_lines)
+                filename=filename, content=content, path=path,
+                num_lines=num_lines, relative_path=relative_path)
             paste.files.append(pfile)
 
         if files:

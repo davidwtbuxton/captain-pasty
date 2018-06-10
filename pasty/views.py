@@ -87,12 +87,12 @@ def paste_download(request, paste_id):
     return response
 
 
-def paste_raw(request, paste_id, filename):
+def paste_raw(request, paste_id, relative_path):
     """Serve a file in Google Cloud Storage using the blobstore API."""
     paste = Paste.get_or_404(paste_id)
 
     for pasty_file in paste.files:
-        if pasty_file.filename == filename:
+        if pasty_file.relative_path == relative_path:
             break
     else:
         raise Http404

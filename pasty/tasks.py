@@ -5,7 +5,7 @@ from google.appengine.api import datastore
 from google.appengine.ext import ndb
 
 from . import index
-from .models import Paste
+from .models import Paste, make_relative_path
 
 
 def entity_to_instance(entity):
@@ -36,6 +36,11 @@ def resave_paste(entity):
     if not paste.description:
         dirty = True
         paste.description = u''
+
+    for pfile in paste.files:
+        if not pfile.relative_path:
+            dirty = True
+            pfile.relative_path = make_relative_path(pfile.path)
 
     if dirty:
         paste.put()

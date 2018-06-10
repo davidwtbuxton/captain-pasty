@@ -35,7 +35,7 @@
 	<div class="paste__content">
 		{% for file in paste.files %}
 			<div class="paste__file">
-				<h2 id="{{ file.filename|slugify }}" class="paste__file-name">
+				<h2 id="{{ file.relative_path|slugify }}" class="paste__file-name">
 					{{ file.filename }}
 
 					<span class="paste__file-meta">
@@ -45,7 +45,7 @@
 				</h2>
 
 
-				<a class="button is-small paste__view-raw" href="{% url 'paste_raw' paste.key.id file.filename %}">Raw</a>
+				<a class="button is-small paste__view-raw" href="{% url 'paste_raw' paste.key.id file.relative_path %}">Raw</a>
 				{{ file.content_highlight }}
 			</div>
 		{% endfor %}
