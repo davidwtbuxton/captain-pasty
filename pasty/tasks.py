@@ -1,62 +1,32 @@
-import mapreduce.base_handler
-import mapreduce.control
-import mapreduce.mapper_pipeline
+import datetime
+
+from djangae.db.migrations import mapper_library
+from google.appengine.api import datastore
 from google.appengine.ext import ndb
 
 from . import index
 from .models import Paste
 
 
-_mapreduce_base_path = '/_ah/mapreduce'
-_pipeline_base_path = _mapreduce_base_path + '/pipeline'
+def entity_to_instance(entity):
+    """Returns an ndb model instance for the datastore entity."""
+    key_path = entity.key().to_path()
+    key = ndb.Key(flat=key_path)
+    obj = key.get()
 
-
-class Pipeline(mapreduce.mapper_pipeline.MapperPipeline):
-    def run(self,
-            job_name,
-            handler_spec,
-            input_reader_spec,
-            output_writer_spec=None,
-            params=None,
-            shards=None):
-
-        # Copied from Djangae's mapper. All this is necessary so that we can
-        # point tasks at Djangae's mapreduce / pipeline handlers (base_path).
-
-        mapreduce_id = mapreduce.control.start_map(
-            job_name,
-            handler_spec,
-            input_reader_spec,
-            params or {},
-            mapreduce_parameters={
-                "done_callback": self.get_callback_url(),
-                "done_callback_method": "GET",
-                "pipeline_id": self.pipeline_id,
-                'base_path': _mapreduce_base_path
-            },
-            shard_count=shards,
-            output_writer_spec=output_writer_spec,
-            queue_name=self.queue_name,
-        )
-        self.fill(self.outputs.job_id, mapreduce_id)
-        self.set_status(console_url="%s/detail?mapreduce_id=%s" % (
-            (_mapreduce_base_path, mapreduce_id)))
+    return obj
 
 
 def resave_pastes_task():
-    pipe = Pipeline(
-            'Re-save pastes.',
-            handler_spec='pasty.tasks.resave_paste',
-            input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
-            params={'entity_kind': 'pasty.models.Paste'},
-            shards=4,
-    )
-    pipe.start(queue_name='resave-pastes', base_path=_pipeline_base_path)
-
-    return pipe
+    dt = datetime.datetime.utcnow()
+    name = 'resave-pastes {}'.format(dt)
+    q = 'resave-pastes'
+    query = datastore.Query('Paste')
+    mapper_library.start_mapping(name, query, resave_paste, queue=q)
 
 
-def resave_paste(paste):
+def resave_paste(entity):
+    paste = entity_to_instance(entity)
     dirty = False
 
     if not paste.filename:
@@ -74,16 +44,11 @@ def resave_paste(paste):
 
 
 def convert_peelings_task():
-    pipe = Pipeline(
-        'Convert peelings to pastes.',
-        handler_spec='pasty.tasks.convert_peeling',
-        input_reader_spec='mapreduce.input_readers.DatastoreInputReader',
-        params={'entity_kind': 'pasty.models.Peeling'},
-        shards=4,
-    )
-    pipe.start(queue_name='convert-peelings', base_path=_pipeline_base_path)
-
-    return pipe
+    dt = datetime.datetime.utcnow()
+    name = 'convert-peelings {}'.format(dt)
+    q = 'convert-peelings'
+    query = datastore.Query('Peeling')
+    mapper_library.start_mapping(name, query, convert_peeling, queue=q)
 
 
 def make_peeling_filename(obj):
@@ -105,8 +70,9 @@ def make_peeling_filename(obj):
     return u'untitled' + language_map.get(language, '.txt')
 
 
-def convert_peeling(peeling):
+def convert_peeling(entity):
     """Convert the previous peelings entities to pastes."""
+    peeling = entity_to_instance(entity)
     data = peeling.to_dict()
     paste_id = peeling.key.id()
     forked_from = ndb.Key(Paste, data['fork_of_id']) if data['fork_of_id'] else None
