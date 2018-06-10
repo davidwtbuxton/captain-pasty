@@ -2,6 +2,7 @@ import json
 import zipfile
 
 import jsonschema
+from djangae import environment
 from django.contrib import messages
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect
@@ -283,7 +284,7 @@ def api_paste_create(request):
     return JsonResponse(result, status=status)
 
 
-@utils.admin_required
+@environment.task_or_admin_only
 def admin(request):
     """For firing migration tasks."""
     form = AdminForm()
@@ -307,7 +308,7 @@ def admin(request):
     return render(request, 'pasty/admin.html', context)
 
 
-@utils.admin_required
+@environment.task_or_admin_only
 def admin_lexers(request):
     """Form to configure lexers for file extensions."""
     formset = AdminLexersFormSet.for_config()

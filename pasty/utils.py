@@ -1,10 +1,8 @@
-import functools
 import io
 import os.path
 import string
 
 import pygments
-from django.core.exceptions import PermissionDenied
 from google.appengine.api import users
 from pygments import formatters
 from pygments import lexers
@@ -19,17 +17,6 @@ def get_current_user_email():
     user = users.get_current_user()
 
     return user.email() if user else u''
-
-
-def admin_required(view_func):
-    @functools.wraps(view_func)
-    def _func(request, *args, **kwargs):
-        if users.is_current_user_admin():
-            return view_func(request, *args, **kwargs)
-        else:
-            raise PermissionDenied
-
-    return _func
 
 
 def get_language_names():

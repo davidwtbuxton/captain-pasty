@@ -47,10 +47,6 @@ class AppEngineTestCase(TestCase):
         os.environ['USER_ID'] = user_id
         os.environ['USER_IS_ADMIN'] = '1' if is_admin else '0'
 
-    def logout(self):
-        for key in self._user_keys:
-            del os.environ[key]
-
 
 @contextlib.contextmanager
 def freeze_time(*args, **kwargs):
