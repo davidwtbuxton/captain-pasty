@@ -46,7 +46,7 @@ def make_name_for_storage(paste, filename):
     filename = os.path.normpath(filename)
     filename = text.get_valid_filename(filename)
 
-    template = u'pasty/{dt:%Y/%m/%d}/{id}/{n}-{filename}'
+    template = u'pasty/{dt:%Y/%m/%d}/{id}/{n}/{filename}'
     name = template.format(dt=dt, id=paste.key.id(), n=n, filename=filename)
     # UTF-8 is valid, but the SDK stub can't handle non-ASCII characters.
     name = name.encode('utf-8')
