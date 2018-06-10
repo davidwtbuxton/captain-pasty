@@ -93,7 +93,7 @@ class PasteRawTestCase(AppEngineTestCase):
     def test_serves_raw_file(self):
         paste = Paste.create_with_files(files=[('image.jpg', 'example')])
 
-        url = reverse('paste_raw', args=[paste.key.id(), 'image.jpg'])
+        url = reverse('paste_raw', args=[paste.key.id(), '1/image.jpg'])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
@@ -102,7 +102,7 @@ class PasteRawTestCase(AppEngineTestCase):
     def test_returns_404_for_bogus_filename(self):
         paste = Paste.create_with_files(files=[('image.jpg', 'example')])
 
-        url = reverse('paste_raw', args=[paste.key.id(), 'bogus.jpg'])
+        url = reverse('paste_raw', args=[paste.key.id(), '1/bogus.jpg'])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 404)
