@@ -1,6 +1,5 @@
 import datetime
 import json
-import unittest
 
 from django.core.urlresolvers import reverse
 
@@ -521,26 +520,6 @@ class ApiPasteDetailTestCase(AppEngineTestCase):
                 u'url': u'/1234/',
             }
         )
-
-
-class ApiRootTestCase(AppEngineTestCase):
-    def test_redirects_to_api_info(self):
-        url = reverse('api_root')
-
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], '/api/v1/')
-
-
-class ApiIndexTestCase(AppEngineTestCase):
-    @unittest.expectedFailure
-    def test_returns_list_of_api_routes(self):
-        url = reverse('api_index')
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {})
 
 
 class ApiPasteCreateTestCase(AppEngineTestCase):

@@ -1,6 +1,5 @@
 import functools
 import io
-import itertools
 import os.path
 import string
 
@@ -145,15 +144,6 @@ def highlight_styles():
     return content
 
 
-def get_url_patterns(prefix=None):
-    """Returns a list of url definitions, optionally filtered by patterns
-    matching the prefix.
-
-    Each item is a pair of (name, pattern).
-    """
-    return []
-
-
 def count_lines(content):
     """Returns the number of lines for a string."""
     try:
@@ -167,20 +157,6 @@ def count_lines(content):
         pass
 
     return count
-
-
-def untitled_name_generator():
-    """Returns a generator which yields strings like 'untitled.txt',
-    'untitled-2.txt', 'untitled-3.txt'.
-    """
-    counter = itertools.count(1)
-    name = 'untitled%s.txt'
-
-    while True:
-        n = next(counter)
-        suffix = '' if n == 1 else ('-' + int(n))
-
-        yield name % suffix
 
 
 class BaseConverter(object):

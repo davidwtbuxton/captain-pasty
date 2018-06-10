@@ -153,29 +153,6 @@ def paste_create(request):
     return render(request, 'pasty/paste_form.html', context)
 
 
-def api_root(request):
-    """Redirect to the most recent API index."""
-    return redirect('api_index')
-
-
-def api_index(request):
-    """Info about the API endpoints."""
-    # patterns = utils.get_url_patterns('/api/v1')
-    result = {'api': []}
-
-    # for name, pattern in patterns:
-    #     link = request.build_absolute_uri(pattern)
-    #     info = {
-    #         'link': link,
-    #         'name': name,
-    #         'pattern': pattern,
-    #     }
-
-    #     result['api'].append(info)
-
-    return JsonResponse(result)
-
-
 def api_star_list(request):
     """Show what pastes the current user has starred (if any)."""
     if not request.user_email:
